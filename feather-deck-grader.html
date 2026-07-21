@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Feather Grader — Les Artistes</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0e0e12;--s1:#17171f;--s2:#1f1f2a;--s3:#27273a;
+  --bd:#2c2c3e;--bd2:#38384e;
+  --acc:#6c63ff;--acc2:#3d3870;
+  --tx:#d6d6e8;--tx2:#8888a8;--tx3:#454560;
+  --green:#34c77b;--yellow:#f5c542;--red:#e05353;--orange:#f09030;--blue:#4dabf7;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --r:8px;--r2:12px;--sidebar:300px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.55;overflow-x:hidden}
+
+/* ─── UTILS ─────────────────── */
+.hidden{display:none!important}
+.flex{display:flex;align-items:center}
+.gap6{gap:6px}.gap8{gap:8px}.gap12{gap:12px}
+.w100{width:100%}
+.dim{color:var(--tx2)}
+.small{font-size:12px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px solid var(--bd);color:var(--tx2);white-space:nowrap}
+.chip.green{background:#0d2b1c;border-color:#1a4a30;color:var(--green)}
+.chip.red{background:#2b0d0d;border-color:#4a1a1a;color:var(--red)}
+.chip.yellow{background:#2b220d;border-color:#4a3a1a;color:var(--yellow)}
+.chip.purple{background:var(--acc2);border-color:var(--acc);color:#b0a8ff}
+.chip.blue{background:#0d1f2b;border-color:#1a3a4a;color:var(--blue)}
+label.lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);display:block;margin-bottom:6px}
+
+/* ─── INPUTS ─────────────────── */
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:var(--font);font-size:13px;padding:9px 11px;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+select option{background:var(--s2)}
+textarea{resize:vertical;min-height:100px;line-height:1.6}
+input[type=file]{display:none}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--s2);border-radius:var(--r);border:1px solid var(--bd)}
+.toggle-label{font-size:13px;color:var(--tx)}
+.toggle-sub{font-size:11px;color:var(--tx2);margin-top:2px}
+.toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle-switch input{display:none}
+.toggle-track{position:absolute;inset:0;background:var(--bd2);border-radius:11px;cursor:pointer;transition:background .2s}
+.toggle-switch input:checked+.toggle-track{background:var(--acc)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none}
+.toggle-switch input:checked~.toggle-thumb{transform:translateX(18px)}
+
+/* ─── BUTTONS ─────────────────── */
+button{cursor:pointer;font-family:var(--font);border-radius:var(--r);font-size:13px;font-weight:500;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-primary{background:var(--acc);color:#fff;padding:10px 18px}
+.btn-primary:hover{background:#7c74ff}
+.btn-primary:active{background:#5a53dd}
+.btn-primary:disabled{background:var(--acc2);color:#555;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--tx2);padding:7px 12px;border:1px solid var(--bd)}
+.btn-ghost:hover{background:var(--s2);color:var(--tx);border-color:var(--bd2)}
+.btn-icon{background:transparent;color:var(--tx2);padding:6px;border:1px solid transparent;border-radius:6px;font-size:16px;line-height:1}
+.btn-icon:hover{background:var(--s2);color:var(--tx)}
+.btn-danger{background:transparent;color:var(--red);padding:5px 9px;border:1px solid transparent;font-size:12px}
+.btn-danger:hover{background:#2b0d0d;border-color:#4a1a1a}
+.btn-full{width:100%;justify-content:center}
+
+/* ─── SCROLLBAR ─────────────────── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+
+/* ─── HEADER ─────────────────────── */
+.hdr{position:sticky;top:0;z-index:200;background:var(--s1);border-bottom:1px solid var(--bd);height:52px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px;white-space:nowrap;flex-shrink:0}
+.logo span{color:var(--acc)}
+.hdr-center{flex:1;display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
+.hdr-chips{display:flex;gap:5px;overflow:hidden;flex-shrink:1}
+.hdr-right{display:flex;gap:5px;align-items:center;flex-shrink:0}
+
+/* Task type selector in header */
+.task-select-wrap{position:relative;flex-shrink:0}
+.task-select-wrap select{padding:5px 28px 5px 10px;font-size:12px;font-weight:600;border-radius:20px;background:var(--s2);border:1px solid var(--acc2);color:#b0a8ff;min-width:160px;cursor:pointer;appearance:none;-webkit-appearance:none}
+.task-select-wrap::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--acc);font-size:11px;pointer-events:none}
+
+/* ─── APP LAYOUT ─────────────────── */
+.app{display:flex;min-height:calc(100vh - 52px)}
+
+/* ─── SIDEBAR ─────────────────────── */
+.sidebar{width:var(--sidebar);min-width:var(--sidebar);background:var(--s1);border-right:1px solid var(--bd);height:calc(100vh - 52px);overflow-y:auto;position:sticky;top:52px;padding:18px 16px;display:flex;flex-direction:column;gap:18px}
+
+/* Provider tabs */
+.ptabs{display:flex;gap:4px;background:var(--bg);border-radius:var(--r);padding:3px}
+.ptab{flex:1;padding:6px 8px;border-radius:6px;border:none;background:transparent;color:var(--tx2);font-size:11px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s}
+.ptab .pi{font-size:15px}
+.ptab .pn{font-size:9px;letter-spacing:.3px}
+.ptab.active{background:var(--s3);color:var(--tx)}
+.ptab:hover:not(.active){background:var(--s2);color:var(--tx)}
+
+/* Key status */
+.key-row{display:flex;gap:6px}
+.key-row input{flex:1;font-family:monospace;font-size:12px;letter-spacing:.5px}
+.key-status{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--tx2)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--tx3);flex-shrink:0}
+.dot.ok{background:var(--green)}.dot.err{background:var(--red)}.dot.warn{background:var(--yellow)}
+.price-note{font-size:11px;color:var(--tx3);margin-top:4px;line-height:1.5}
+
+/* Task hint in sidebar */
+.task-hint{background:var(--s2);border:1px solid var(--bd);border-left:3px solid var(--acc);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--tx2);line-height:1.6}
+.task-hint strong{color:var(--tx);display:block;margin-bottom:4px;font-size:13px}
+
+/* ─── MAIN ─────────────────────────── */
+.main{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:18px;min-width:0}
+
+/* Mobile config */
+.mob-cfg{display:none}
+
+/* ─── SECTION HEADERS ─────────────────── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.sec-title{font-size:15px;font-weight:700;color:#fff}
+.sec-sub{font-size:12px;color:var(--tx2);margin-top:2px}
+
+/* ─── DECKS GRID ─────────────────────── */
+.decks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+
+.deck-card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:12px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
+.deck-card.has-slides{border-color:var(--acc2)}
+.deck-card.ref-card{border-color:var(--yellow);background:#1a180d}
+.ref-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--yellow);margin-bottom:-4px}
+.deck-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.deck-letter{font-size:16px;font-weight:800;color:#fff}
+.deck-meta{font-size:11px;color:var(--tx2)}
+
+/* Drop zone */
+.dz{border:1.5px dashed var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:all .15s;color:var(--tx2);font-size:12px}
+.dz:hover,.dz.over{border-color:var(--acc);background:#1a1a2e;color:var(--tx)}
+.dz .dz-icon{font-size:18px;margin-bottom:4px}
+
+/* Thumbnails */
+.thumb-row{display:flex;flex-wrap:wrap;gap:4px}
+.thumb{position:relative;width:46px;height:34px;border-radius:4px;overflow:hidden;border:1px solid var(--bd);background:var(--bg)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb-n{position:absolute;bottom:1px;left:2px;font-size:8px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.55);padding:0 2px;border-radius:2px;pointer-events:none}
+.thumb-del{position:absolute;top:1px;right:1px;background:rgba(0,0,0,.7);border:none;border-radius:3px;color:#fff;font-size:9px;padding:1px 3px;cursor:pointer;display:none;line-height:1}
+.thumb:hover .thumb-del{display:block}
+
+/* ─── ENTERPRISE TOGGLE ─────────────── */
+.enterprise-section{display:none}
+.enterprise-section.show{display:block}
+
+/* ─── GUIDELINES ─────────────────────── */
+.guidelines-section{display:none}
+.guidelines-section.show{display:block}
+
+/* ─── GRADE BAR ─────────────────────── */
+.grade-bar{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.grade-info{font-size:13px;color:var(--tx2)}
+.grade-info strong{color:var(--tx)}
+
+/* ─── PROGRESS ─────────────────────── */
+.prog-wrap{display:none}
+.prog-wrap.show{display:block}
+.prog-inner{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.prog-top{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2)}
+.spinner{width:14px;height:14px;border:2px solid var(--bd);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog-bar{height:4px;background:var(--bd);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--acc);border-radius:2px;transition:width .35s;width:0}
+
+/* ─── VALIDATION BANNER ─────────────── */
+.val-banner{display:none;background:#2b1a0d;border:1px solid var(--orange);border-radius:var(--r2);padding:14px 18px;font-size:13px;line-height:1.7}
+.val-banner.show{display:block}
+.val-banner .vb-title{color:var(--orange);font-weight:700;margin-bottom:8px}
+.val-banner .vb-item{color:#e8c080;padding-left:14px;position:relative}
+.val-banner .vb-item::before{content:'⚠';position:absolute;left:0}
+
+/* ─── RESULTS ─────────────────────── */
+.results-wrap{display:none}
+.results-wrap.show{display:flex;flex-direction:column;gap:16px}
+.res-hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.res-title{font-size:16px;font-weight:700;color:#fff}
+.res-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Score ladder */
+.ladder{display:flex;flex-wrap:wrap;gap:8px}
+.lpill{display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:7px 12px;font-size:13px}
+.lscore{font-size:16px;font-weight:800;min-width:18px;text-align:center}
+.lscore.s7{color:var(--green)}.lscore.s1{color:var(--red)}.lscore.smid{color:var(--acc)}
+.lreason{font-size:11px;color:var(--tx2);max-width:180px}
+
+/* A/B result */
+.ab-result{background:var(--s1);border:2px solid var(--acc);border-radius:var(--r2);padding:20px;display:flex;flex-direction:column;gap:12px}
+.ab-choice{font-size:24px;font-weight:800;color:var(--green)}
+.ab-rationale{font-size:13px;line-height:1.75;color:var(--tx);white-space:pre-wrap}
+
+/* Deck result cards */
+.deck-result{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden}
+.dr-hdr{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 16px;background:var(--s2);border-bottom:1px solid var(--bd);cursor:pointer;user-select:none}
+.dr-title{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px}
+.score-pill{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:var(--acc2);color:#b0a8ff}
+.score-pill.s7{background:#0d2b1c;color:var(--green)}.score-pill.s1{background:#2b0d0d;color:var(--red)}
+.dr-chev{color:var(--tx2);font-size:18px;transition:transform .2s;flex-shrink:0}
+.dr-hdr.open .dr-chev{transform:rotate(90deg)}
+.dr-body{padding:18px;display:none;flex-direction:column;gap:14px}
+.dr-body.open{display:flex}
+.sub-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--tx2);padding-bottom:7px;border-bottom:1px solid var(--bd)}
+.flag-block{white-space:pre-wrap;font-size:13px;line-height:1.75}
+.flag-met{color:var(--green);font-weight:600}
+.flag-partial{color:var(--yellow);font-weight:600}
+.flag-not{color:var(--red);font-weight:600}
+.prose{font-size:13px;line-height:1.75;color:var(--tx);white-space:pre-wrap}
+
+/* Raw output */
+.raw-out{background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);padding:14px;font-family:monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-x:auto;display:none;max-height:600px;overflow-y:auto}
+.raw-out.show{display:block}
+
+/* ─── TOAST ─────────────────────── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:10px 18px;border-radius:var(--r2);font-size:13px;opacity:0;pointer-events:none;transition:all .25s;z-index:999;max-width:90vw;text-align:center;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--green);color:var(--green);background:#0d2b1c}
+.toast.err{border-color:var(--red);color:var(--red);background:#2b0d0d}
+
+/* ─── EMPTY STATE ─────────────────── */
+.empty{text-align:center;padding:50px 20px;color:var(--tx2)}
+.empty-icon{font-size:44px;margin-bottom:12px}
+.empty h3{color:var(--tx);font-size:15px;margin-bottom:6px}
+
+/* ─── RESPONSIVE ─────────────────── */
+@media(max-width:767px){
+  .sidebar{display:none}
+  .mob-cfg{display:flex;flex-direction:column;gap:12px}
+  .main{padding:12px;gap:12px}
+  .decks-grid{grid-template-columns:1fr}
+  .grade-bar{flex-direction:column;align-items:stretch}
+  .grade-bar .btn-primary{justify-content:center;padding:13px}
+  .task-select-wrap select{min-width:130px;font-size:11px}
+  .hdr-chips .chip:not(.always){display:none}
+  .lreason{display:none}
+}
+@media(min-width:768px) and (max-width:1023px){
+  :root{--sidebar:260px}
+  .decks-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ──────────────────────────── -->
+<header class="hdr">
+  <div class="logo">Feather <span>Grader</span></div>
+  <div class="hdr-center">
+    <div class="task-select-wrap">
+      <select id="taskTypeSelect" onchange="setTaskType(this.value)">
+        <option value="aesthetic_ranking">Aesthetic Ranking</option>
+        <option value="style_matching">Style Matching</option>
+        <option value="template_following">Template Following</option>
+        <option value="template_creation">Template Creation</option>
+        <option value="content_grading">Content Grading</option>
+        <option value="design_instructions">Design Instructions</option>
+        <option value="complete_the_deck">Complete the Deck</option>
+        <option value="ab_preferences">A/B Preferences</option>
+        <option value="deck_outlines">Deck Outlines</option>
+      </select>
+    </div>
+    <div class="hdr-chips">
+      <span class="chip always purple" id="hProvChip">–</span>
+      <span class="chip always" id="hModelChip" style="display:none">–</span>
+      <span class="chip always" id="hDeckChip">0 decks</span>
+      <span class="chip" id="hTimerChip">45 min</span>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <button class="btn-ghost small" onclick="showGuide()">📖 Rules</button>
+  </div>
+</header>
+
+<div class="app">
+
+<!-- ─── SIDEBAR ──────────────────────────── -->
+<aside class="sidebar">
+  <div>
+    <label class="lbl">Provider</label>
+    <div class="ptabs" id="ptabsSidebar">
+      <button class="ptab" data-p="anthropic" onclick="setProvider('anthropic',this)"><span class="pi">🔵</span><span class="pn">Anthropic</span></button>
+      <button class="ptab active" data-p="google" onclick="setProvider('google',this)"><span class="pi">🟡</span><span class="pn">Google</span></button>
+      <button class="ptab" data-p="openai" onclick="setProvider('openai',this)"><span class="pi">🟢</span><span class="pn">OpenAI</span></button>
+      <button class="ptab" data-p="kimi" onclick="setProvider('kimi',this)"><span class="pi">🌙</span><span class="pn">Kimi</span></button>
+    </div>
+  </div>
+  <div>
+    <label class="lbl">API Key</label>
+    <div class="key-row">
+      <input type="password" id="apiKey" placeholder="Paste key here…" autocomplete="off" oninput="syncKey('sidebar')">
+      <button class="btn-icon" onclick="toggleKey()">👁</button>
+    </div>
+    <div class="key-status"><span class="dot" id="kDot"></span><span id="kTxt">Enter key to begin</span></div>
+    <p class="price-note" id="keyNote"></p>
+  </div>
+  <div>
+    <label class="lbl">Model</label>
+    <select id="modelSelect" onchange="syncModel('sidebar')"><option value="">–</option></select>
+    <p class="price-note" id="priceNote"></p>
+  </div>
+  <!-- Task hint -->
+  <div class="task-hint" id="sidebarHint"><strong id="sidebarHintTitle"></strong><span id="sidebarHintBody"></span></div>
+  <!-- Guidelines (Design Instructions only) -->
+  <div class="guidelines-section" id="sidebarGuidelines" style="flex:1;display:flex;flex-direction:column;gap:8px">
+    <label class="lbl">Design Guidelines / Brief</label>
+    <textarea id="guidelines" placeholder="Paste the full design brief here. Every bullet will be evaluated." style="flex:1;min-height:160px" oninput="updateGradeBtn()"></textarea>
+  </div>
+  <!-- Scoring rules -->
+  <div style="font-size:11px;color:var(--tx3);line-height:1.85">
+    ✓ Exactly one 1 and one 7 per task<br>
+    ✓ Never tie on 1 or 7<br>
+    ✓ Two-way ties only (never 3-way)<br>
+    ✓ Use full 1–7 range; space scores out<br>
+    ✓ A/B tasks: pairwise pick, not 1–7
+  </div>
+</aside>
+
+<!-- ─── MAIN ──────────────────────────────── -->
+<main class="main">
+
+  <!-- Mobile config -->
+  <div class="mob-cfg" id="mobCfg">
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:14px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:14px;font-weight:700;color:#fff">⚙️ Setup</div>
+      <div>
+        <label class="lbl">Provider</label>
+        <div class="ptabs" id="ptabsMobile">
+          <button class="ptab" data-p="anthropic" onclick="setProvider('anthropic',this,true)"><span class="pi">🔵</span><span class="pn">Anthropic</span></button>
+          <button class="ptab active" data-p="google" onclick="setProvider('google',this,true)"><span class="pi">🟡</span><span class="pn">Google</span></button>
+          <button class="ptab" data-p="openai" onclick="setProvider('openai',this,true)"><span class="pi">🟢</span><span class="pn">OpenAI</span></button>
+          <button class="ptab" data-p="kimi" onclick="setProvider('kimi',this,true)"><span class="pi">🌙</span><span class="pn">Kimi</span></button>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">API Key</label>
+        <div class="key-row">
+          <input type="password" id="apiKeyM" placeholder="Paste key…" autocomplete="off" oninput="syncKey('mobile')">
+          <button class="btn-icon" onclick="toggleKey()">👁</button>
+        </div>
+        <div class="key-status"><span class="dot" id="kDotM"></span><span id="kTxtM">Enter key to begin</span></div>
+      </div>
+      <div>
+        <label class="lbl">Model</label>
+        <select id="modelSelectM" onchange="syncModel('mobile')"><option value="">–</option></select>
+        <p class="price-note" id="priceNoteM"></p>
+      </div>
+    </div>
+    <!-- Mobile guidelines -->
+    <div class="guidelines-section" id="mobGuidelines" style="display:none">
+      <div style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:14px">
+        <label class="lbl">Design Guidelines</label>
+        <textarea id="guidelinesM" placeholder="Paste design brief…" style="min-height:120px;margin-top:8px" oninput="syncGl()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enterprise toggle -->
+  <div class="enterprise-section" id="enterpriseSection">
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Enterprise prompt</div>
+        <div class="toggle-sub">Enterprise: consulting/finance/B2B context — apply enterprise-style aesthetic standards</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="enterpriseToggle" onchange="updateGradeBtn()">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- Reference deck section -->
+  <div id="refSection" class="hidden">
+    <div class="sec-hdr"><div><div class="sec-title" id="refTitle">Reference Deck</div><div class="sec-sub" id="refSub">Upload the reference shown in the task.</div></div></div>
+    <div style="max-width:300px">
+      <div class="deck-card ref-card">
+        <div class="ref-badge">📌 Reference</div>
+        <div class="deck-top"><span class="deck-letter" style="color:var(--yellow)">REF</span><span class="deck-meta" id="refMeta">0 slides</span></div>
+        <div class="dz" id="refDz" onclick="triggerRefUpload()" ondragover="dzOver(event,'ref')" ondragleave="dzLeave('ref')" ondrop="dzDrop(event,'ref')">
+          <input type="file" accept="image/*" multiple id="refInput" onchange="handleRefFiles(this.files)">
+          <div class="dz-icon">📋</div>
+          <div>Upload reference slides</div>
+        </div>
+        <div class="thumb-row" id="refThumbs"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decks -->
+  <div id="decksSection">
+    <div class="sec-hdr">
+      <div><div class="sec-title" id="decksSectionTitle">Decks to Grade</div><div class="sec-sub" id="decksSectionSub">Upload slide images for each deck</div></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-ghost small" onclick="clearDecks()">Clear</button>
+        <button class="btn-primary small" id="addDeckBtn" onclick="addDeck()">+ Add Deck</button>
+      </div>
+    </div>
+    <div class="decks-grid" id="decksGrid"></div>
+  </div>
+
+  <!-- Grade bar -->
+  <div class="grade-bar">
+    <div class="grade-info"><strong id="gradeStrong">Ready</strong><span id="gradeSub" class="dim"> — Fill in all fields</span></div>
+    <button class="btn-primary" id="gradeBtn" onclick="startGrading()" disabled>⚡ Grade</button>
+  </div>
+
+  <!-- Progress -->
+  <div class="prog-wrap" id="progWrap">
+    <div class="prog-inner">
+      <div class="prog-top"><span class="spinner"></span><span id="progLabel">Sending to API…</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    </div>
+  </div>
+
+  <!-- Validation banner -->
+  <div class="val-banner" id="valBanner"><div class="vb-title">⚠️ Rule violations detected — review before submitting</div><div id="valItems"></div></div>
+
+  <!-- Results -->
+  <div class="results-wrap" id="resultsWrap">
+    <div class="res-hdr">
+      <div class="res-title">📊 Scorecards</div>
+      <div class="res-actions">
+        <button class="btn-ghost small" onclick="toggleRaw()">Raw</button>
+        <button class="btn-ghost small" onclick="dlTxt()">⬇ Download</button>
+        <button class="btn-primary small" onclick="copyAll()">Copy all</button>
+      </div>
+    </div>
+    <div class="ladder" id="ladderDiv"></div>
+    <div class="ab-result hidden" id="abResultDiv"></div>
+    <div id="deckResultsDiv"></div>
+    <div class="raw-out" id="rawOut"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">🎨</div>
+    <h3>Nothing graded yet</h3>
+    <p class="dim">Select your task type, upload slide images, and hit Grade.</p>
+  </div>
+
+</main>
+</div>
+
+<!-- Rules modal -->
+<div id="guideModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;overflow-y:auto;padding:24px 16px">
+  <div style="max-width:700px;margin:0 auto;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:24px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:17px;font-weight:700;color:#fff">📖 Les Artistes — Scoring Rules</div>
+      <button class="btn-icon" onclick="hideGuide()">✕</button>
+    </div>
+    <div style="font-size:13px;line-height:1.8;color:var(--tx2)">
+      <div style="color:var(--tx);font-weight:700;margin-bottom:6px">Universal scoring rules (apply to every task)</div>
+      <ul style="padding-left:18px;display:flex;flex-direction:column;gap:5px">
+        <li>Every task gets <strong style="color:var(--tx)">exactly one 1</strong> (worst) and <strong style="color:var(--tx)">exactly one 7</strong> (best). Never tie on 1 or 7.</li>
+        <li><strong style="color:var(--tx)">8-deck task</strong> (most common): use 1, 2, 3, 4, 5, 6, 7 with exactly one two-way tie. No duplicates at extremes.</li>
+        <li><strong style="color:var(--tx)">9+ decks</strong>: additional two-way ties allowed. No tie may be 3-way or larger.</li>
+        <li><strong style="color:var(--tx)">Fewer than 7 decks</strong>: no duplicate scores. Use gaps to show quality differences (e.g., {1, 2, 5, 7} shows the top is significantly better).</li>
+        <li>Space scores across the full 1–7 range to show real variability within the task.</li>
+        <li>A/B Preferences and Deck Outlines are <strong style="color:var(--tx)">pairwise picks</strong>, not 1–7 rankings.</li>
+        <li>Do NOT validate factual claims through external research. Do NOT translate tasks.</li>
+        <li>Cite the specific slide number and the specific visual element in every observation.</li>
+      </ul>
+      <div style="color:var(--tx);font-weight:700;margin:14px 0 6px">Major errors to flag (highest to lowest priority)</div>
+      <ol style="padding-left:18px;display:flex;flex-direction:column;gap:5px">
+        <li>Text or slide elements overflowing or overlapping</li>
+        <li>Empty or broken shapes (broken arrows, arrows pointing nowhere)</li>
+        <li>Awkward alignment and spacing issues</li>
+        <li>Inconsistency across slides (unexpected background changes, different header fonts)</li>
+        <li>Illegible text (poor contrast, very small text)</li>
+        <li>Slides too text-heavy, dense, wordy, or cluttered</li>
+        <li>Charts or graphs visually broken or malformed</li>
+      </ol>
+      <div style="margin-top:12px;padding:10px;background:var(--s2);border-radius:var(--r);border-left:3px solid var(--yellow)">
+        <strong style="color:var(--yellow)">Weigh holistically.</strong> A deck with one major high-priority issue may still rank above a deck with many minor issues. Consider severity, frequency, and overall impact.
+      </div>
+      <div style="color:var(--tx);font-weight:700;margin:14px 0 6px">Voice rules (all rationales)</div>
+      <ul style="padding-left:18px;display:flex;flex-direction:column;gap:4px">
+        <li>Neutral and objective — no first-person pronouns</li>
+        <li>No em dashes. No word "faithful" (unless referring to source material in Content Grading).</li>
+        <li>No buzzwords: cohesive, seamless, robust, leverages, vibrant, dynamic, sophisticated</li>
+        <li>Every observation must cite a slide number and a specific element</li>
+        <li>Strong: "Slide 4 has consistent spacing between content blocks" — Weak: "The polish is bad"</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════
+   PROVIDERS & MODELS
+══════════════════════════════════════ */
+const PROVIDERS = {
+  anthropic: {
+    name:'Anthropic', hint:'sk-ant-…',
+    note:'Get key at console.anthropic.com',
+    models:[
+      {id:'claude-haiku-4-5-20251001', label:'Claude Haiku 4.5', price:'$1 / $5 per 1M'},
+      {id:'claude-sonnet-4-6',         label:'Claude Sonnet 4.6', price:'$3 / $15 per 1M'},
+      {id:'claude-sonnet-5',           label:'Claude Sonnet 5',   price:'$2 / $10 per 1M (est)'},
+    ], defaultIdx:0,
+  },
+  google: {
+    name:'Google', hint:'AIza…',
+    note:'Get key at aistudio.google.com',
+    models:[
+      {id:'gemini-2.5-flash', label:'Gemini 2.5 Flash ⭐', price:'$0.30 / $2.50 per 1M — best value'},
+      {id:'gemini-2.0-flash', label:'Gemini 2.0 Flash',   price:'$0.10 / $0.40 per 1M — cheapest'},
+      {id:'gemini-2.5-pro',  label:'Gemini 2.5 Pro',    price:'$1.25 / $10 per 1M'},
+    ], defaultIdx:0,
+  },
+  openai: {
+    name:'OpenAI', hint:'sk-…',
+    note:'Get key at platform.openai.com',
+    models:[
+      {id:'gpt-4.1-nano', label:'GPT-4.1 Nano', price:'$0.10 / $0.40 per 1M'},
+      {id:'gpt-5-mini',   label:'GPT-5 Mini',   price:'$0.25 / $2.00 per 1M'},
+      {id:'gpt-4.1',      label:'GPT-4.1',      price:'$2 / $8 per 1M'},
+    ], defaultIdx:0,
+  },
+  kimi: {
+    name:'Kimi', hint:'Moonshot API key…',
+    note:'Get key at platform.moonshot.cn',
+    models:[
+      {id:'kimi-k3', label:'Kimi K3', price:'$3 / $15 per 1M'},
+    ], defaultIdx:0,
+  },
+};
+
+/* ══════════════════════════════════════
+   TASK CONFIGS
+══════════════════════════════════════ */
+const TASK_CFG = {
+  aesthetic_ranking:   {label:'Aesthetic Ranking',   time:'45 min', hasRef:false, refOptional:false, hasGl:false, hasEnt:true,  fixedCount:null, output:'1_7'},
+  style_matching:      {label:'Style Matching',      time:'45 min', hasRef:true,  refOptional:false, hasGl:false, hasEnt:false, fixedCount:null, output:'1_7', refTitle:'Reference Deck (style guide)', refSub:'Upload the reference deck from the task — it defines the target visual style.'},
+  template_following:  {label:'Template Following',  time:'45 min', hasRef:true,  refOptional:false, hasGl:false, hasEnt:false, fixedCount:null, output:'1_7', refTitle:'Reference Template', refSub:'Upload the template contact sheet shown in the task (fill-in-the-blank reference).'},
+  template_creation:   {label:'Template Creation',   time:'45 min', hasRef:true,  refOptional:false, hasGl:false, hasEnt:false, fixedCount:null, output:'1_7', refTitle:'Reference Template (guide)', refSub:'Upload the template reference deck. Responses build out new content using its structure.'},
+  content_grading:     {label:'Content Grading',     time:'45 min', hasRef:true,  refOptional:true,  hasGl:false, hasEnt:false, fixedCount:null, output:'1_7', refTitle:'Reference Material (optional)', refSub:'Upload only if a reference deck is shown in the task. Use it as content context only — do not judge visual style against it.'},
+  design_instructions: {label:'Design Instructions', time:'120 min',hasRef:false, refOptional:false, hasGl:true,  hasEnt:false, fixedCount:null, output:'1_7'},
+  complete_the_deck:   {label:'Complete the Deck',   time:'45 min', hasRef:true,  refOptional:false, hasGl:false, hasEnt:false, fixedCount:null, output:'1_7', refTitle:'Prefix Deck (existing slides)', refSub:'Upload the prefix slide deck. Each response is a continuation suffix graded against this prefix.'},
+  ab_preferences:      {label:'A/B Preferences',     time:'45 min', hasRef:false, refOptional:false, hasGl:false, hasEnt:false, fixedCount:2,    output:'ab',  decksSub:'Upload Deck A and Deck B — exactly two decks generated from the same prompt.'},
+  deck_outlines:       {label:'Deck Outlines',       time:'45 min', hasRef:false, refOptional:false, hasGl:false, hasEnt:false, fixedCount:2,    output:'ab',  decksSub:'Upload Outline A and Outline B — two outlines generated from the same prompt.'},
+};
+
+/* ══════════════════════════════════════
+   SYSTEM PROMPTS
+══════════════════════════════════════ */
+const VOICE = `
+VOICE AND STYLE RULES
+- Neutral and objective throughout — no first-person pronouns
+- No em dashes
+- Do not use the word "faithful" unless referencing source material accuracy
+- No buzzwords: cohesive, seamless, robust, leverages, vibrant, dynamic, sophisticated, polished-and-divergent, etc.
+- Every visual observation must cite a slide number and name the specific element
+- Strong feedback: "Slide 4 has consistent spacing between content blocks, and Slide 7 uses a clear visual hierarchy with appropriately sized headings" — Weak feedback: "The polish is bad"
+- Clear, human, fluid prose — write like a thoughtful person, not a formal report
+- Do NOT validate factual claims through external research. Do NOT translate tasks.`;
+
+const SCORING_RULES_1_7 = `
+SCORING RULES
+- Score each deck from 1 to 7. Do not standardize scores across tasks.
+- Exactly one deck must receive 7 (best) and exactly one must receive 1 (worst). Never tie on 1 or 7.
+- For 8 decks (most common): use 1,2,3,4,5,6,7 with exactly one two-way tie. No duplicates at the extremes.
+- For more than 8 decks: additional two-way ties are allowed, but no tie may be 3-way or larger.
+- For fewer than 7 decks: no duplicate scores at all. Use gaps to convey quality signal (e.g., {1, 2, 5, 7} shows the top is significantly better than the rest).
+- Space scores across the full 1–7 range to show real variability within this specific task.
+- Look for concrete differences to break ties — a close call is NOT a tie.
+- Use the full range. Most tasks have 8 or more responses, which is enough to use every integer from 1 to 7 at least once with a single tie.`;
+
+const MAJOR_ERRORS = `
+MAJOR ERRORS — flag these in order of priority
+1. Text or slide elements overflowing or overlapping — text touching/overlapping text, shapes, images, or diagram elements
+2. Empty or broken shapes — broken arrows, arrows that don't point to anything, incomplete visual elements
+3. Awkward or egregious alignment and spacing — misaligned text/objects, text touching shapes without padding, uneven spacing making slides look unpolished
+4. Awkward inconsistency across slides — background colors changing unexpectedly between non-divider slides, different header fonts throughout, inconsistent layout patterns without clear reason
+5. Illegible text — white text on white/near-white background, insufficient contrast, extremely small text
+6. Slides too text-heavy, dense, wordy, or cluttered — so much content that slides are hard to scan
+7. Charts or graphs visually broken or malformed — distorted, mislabeled, cut off, or incorrectly rendered
+Weigh errors holistically, not by count. A single high-priority error can outweigh multiple minor issues, but frequency and scope matter. Always evaluate the deck as a whole.`;
+
+const MINOR_ERRORS = `
+MINOR ERRORS
+- Miscalibrated font sizes or title hierarchy (body text larger than heading, etc.)
+- Subtle alignment or spacing issues
+- Minor visual inconsistencies that don't significantly affect readability
+- Inconsistent bolding or text emphasis
+- Excessive or unnecessary headings`;
+
+const OVERWEIGHT_WARNING = `
+DO NOT OVER-ANCHOR ON
+- The exact contents of AI-generated images (focus on whether images serve the slide's visual purpose)
+- The exact color scheme in raw creation tasks (these carry less weight than layout quality, structure, readability, and overall polish)`;
+
+const SYS = {
+
+aesthetic_ranking: (isEnt) => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
+
+TASK TYPE: Aesthetic Ranking — rank each deck by overall visual quality.
+PROMPT TYPE: ${isEnt ? 'ENTERPRISE — apply enterprise-style aesthetic standards below' : 'NON-ENTERPRISE — evaluate on general visual quality only'}
+
+YOUR JOB
+Rank decks by how they look. You are NOT grading factual accuracy, content quality, or whether the model followed instructions. Grade only visual quality.
+
+${isEnt ? `ENTERPRISE-STYLE AESTHETIC STANDARDS (apply all of these)
+
+Design cleanliness:
+- Slides must look clean, not overstyled, and free of UI-style elements like cards
+- Avoid rounded rectangles
+- Background colors must stay consistent across slides — exceptions are divider slides and title slides only
+
+Layout:
+- Columns, rows, headers, charts, and callouts must be consistently aligned
+- Treat negative space as part of the design — leave enough room between elements so the slide is easy to scan
+- Content must fit comfortably within the slide; split across slides rather than shrinking aggressively
+- Clear font-size hierarchy: titles larger than body text, body larger than annotations
+- One primary font family; a second only when it has a clear, consistent functional role
+- Consistent margins across slides
+
+Emphasis:
+- Bold or use color selectively to highlight the most important things only
+- Do not bold so much that emphasis loses meaning
+- Avoid competing emphasis treatments (e.g., bold + color + size increase on the same element simultaneously)
+
+Charts and tables:
+- Charts must look intentional, not generic or decorative
+- Use color in charts to highlight meaning, not just as decoration
+
+` : `GENERAL VISUAL QUALITY STANDARDS
+Judge on overall design quality, polish, layout clarity, and professionalism. Non-enterprise decks are not held to consulting-style standards, but they must still be visually clear, consistent, and coherent.
+
+`}GRADING CRITERIA
+Score two dimensions together:
+- Aesthetics: strong typography and hierarchy; effective color use and harmony; consistency across slides; visual variety; quality of charts, diagrams, images, and icons.
+  - HIGH: polished, professional, coherent | LOW: sloppy, inconsistent, dated, harsh, generic
+- Format: clear spacing and margins; consistent alignment; logical grouping; strong visual hierarchy; no clutter or overlap; easy to scan.
+  - HIGH: clean, structured, readable | LOW: crowded, misaligned, confusing
+${MAJOR_ERRORS}
+${MINOR_ERRORS}
+${OVERWEIGHT_WARNING}
+
+FOREIGN LANGUAGE: Do not escalate. Evaluate only what is visually visible.
+${SCORING_RULES_1_7}
+
+OUTPUT FORMAT — produce the following for every deck:
+
+## Deck [LETTER]
+
+### Visual Assessment
+[Assess Aesthetics and Format. Name any major or minor errors explicitly, citing the slide number and the specific element. Note what works well with the same level of specificity.]
+
+### Ranking
+[One paragraph combining aesthetics and format findings. End with: Score: X/7]
+Reserve "the best" language only for the deck scoring 7. Match the tone of the rationale to the position on the ladder.
+
+After all individual scorecards:
+
+## Ranking Summary
+[Score] — Deck [LETTER] — [one-line decisive reason]
+${VOICE}`,
+
+style_matching: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
+
+TASK TYPE: Style Matching — rank each deck by how well it captures the reference deck's overall visual style.
+
+YOUR JOB
+A reference deck is provided at the top. It acts as a style guide — its visual language (typography, color palette, spacing, layout conventions, image conventions, visual hierarchy) is the target. Rank each response by how well it captures that look and feel. There is NO requirement to reproduce exact slide layouts or exact slide counts.
+
+CRITICAL RULE — Faithful-to-the-style beats polished-but-divergent.
+A response that looks more impressive to the eye but ignores the reference's typography, color palette, spacing, or layout conventions ranks BELOW one that captures the reference's look and feel but is less impressive on its own. You are not judging whether the reference style is good. You are judging how well each response captures it.
+
+WHAT TO JUDGE (in order of importance)
+- Typography: same or very similar fonts? Same weight hierarchy? Same size relationships?
+- Color palette: same colors? Similar proportions and usage patterns?
+- Spacing and layout conventions: similar density, margins, whitespace patterns, column structures?
+- Image conventions: similar imagery type and treatment if images are present?
+- Visual hierarchy: same information hierarchy as the reference?
+- Overall feel: does this look like it could have come from the same designer as the reference deck?
+
+WHAT NOT TO JUDGE
+- Factual accuracy or correctness of content
+- Writing quality
+- Subject matter of the reference deck (it is a style guide only — do not reward copying the reference's content)
+
+FOREIGN LANGUAGE: Do not escalate. Evaluate style only.
+${SCORING_RULES_1_7}
+
+OUTPUT FORMAT:
+
+## Deck [LETTER]
+
+### Style Match Analysis
+[Assess how well this deck captures the reference's visual language. Name specific style elements — typography, color, spacing, layout conventions — and compare them directly to the reference. Cite slide numbers and specific visual properties. Focus on specific visual elements, not layout position alone.]
+
+### Ranking
+[One paragraph on style capture quality. End with: Score: X/7]
+Reserve "the best" language only for the deck scoring 7.
+
+After all individual scorecards:
+
+## Ranking Summary
+[Score] — Deck [LETTER] — [one-line decisive reason]
+${VOICE}`,
+
+template_following: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
+
+TASK TYPE: Template Following — rank each deck by how correctly it fills in the template's placeholders while leaving everything else exactly as-is.
+
+YOUR JOB
+A reference template is provided. It has specific placeholders (marked with [brackets]) to fill in. Everything NOT marked as a placeholder must be reproduced exactly — layout, slide order, structure, formatting, visual elements. This is a 1:1 slide matching task: template slide N maps to output slide N.
+
+CRITICAL RULES
+- Changing an element the template did not mark is a DIVERGENCE, not an improvement
+- A response that "looks better" by changing the template ranks LOWER than one that fills placeholders correctly and preserves everything else
+- When in doubt, preserve the template over making aesthetic improvements
+- Do NOT grade factual accuracy or topic correctness
+
+WHAT TO EVALUATE (slide by slide)
+- Were all placeholders filled in correctly and completely?
+- Does the filled content fit within the allocated space without clutter, overflow, or imbalance?
+- Is the structure, layout, and visual design of the rest of the slide preserved exactly?
+- Are conditional formatting rules preserved (even if resulting values or colors differ due to different data — this is NOT an error if the same formatting rules are applied correctly)?
+- Do replacement images serve the same visual purpose within the template?
+
+NOTE: If a response contains a different mix of statuses than the template and the resulting color distribution differs, this is not an error as long as the correct colors are applied to the corresponding statuses.
+
+FOREIGN LANGUAGE: Do not escalate.
+${SCORING_RULES_1_7}
+
+OUTPUT FORMAT:
+
+## Deck [LETTER]
+
+### Template Analysis (slide by slide)
+[Go through each slide. Note: which placeholders were filled correctly; which overflowed, cluttered, or didn't fit; which elements were changed when they should not have been; and any conditional formatting preserved or broken. Reference the template specifically by slide number and element name.]
+
+### Ranking
+[One paragraph on overall template preservation and placeholder quality. End with: Score: X/7]
+Reserve "the best" language only for the deck scoring 7.
+
+After all individual scorecards:
+
+## Ranking Summary
+[Score] — Deck [LETTER] — [one-line decisive reason]
+${VOICE}`,
+
+template_creation: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
+
+TASK TYPE: Template Creation — rank each deck by how well it reproduces the template's exact layouts, components, and structural patterns while building out new content.
+
+YOUR JOB
+A reference template is provided as a guide. Unlike Template Following, there are NO explicit placeholders and NO 1:1 slide mapping. A response may use a different number of slides, or reuse one template layout across several. The response builds out new content — but the template's actual layouts, components, and structural patterns must be reproduced exactly, not merely resembled.
+
+CRITICAL DISTINCTION vs. STYLE MATCHING
+This goes beyond a style match. Echoing the template's colors or typography is not enough. Layouts, components (data visualization types, callout structures, icon treatments, table styles), and structural patterns must match exactly.
+
+WHAT TO JUDGE
+- Does each slide use the template's actual layout patterns? Not just similar-looking layouts, but the same structural approach?
+- Are the same components used — the same types of data visualizations, callout boxes, table structures, icon systems?
+- When new content is added, does it feel structurally native to the template, as if built from the same slide library?
+- Do NOT judge content accuracy, writing quality, or aesthetic similarity alone
+
+IMPORTANT NOTES
+- Very similar decks are expected — multiple responses may look nearly indistinguishable. A close call is NOT a tie. Assign separate rankings.
+- Keep rationales focused on how exactly the template's key structural elements were reproduced, not on deck-to-deck comparisons.
+- Do not reward responses for "improving" the template's appearance if they drift from its structure.
+
+FOREIGN LANGUAGE: Do not escalate.
+${SCORING_RULES_1_7}
+
+OUTPUT FORMAT:
+
+## Deck [LETTER]
+
+### Structural Fidelity Analysis
+[Assess how well each slide reproduces the template's layout patterns, component types, and structural conventions. Name specific elements — "the data visualization on Slide 3 uses a bar chart rather than the template's donut chart" — and compare to the reference. Cite slide numbers.]
+
+### Ranking
+[One paragraph on structural fidelity. End with: Score: X/7]
+Reserve "the best" language only for the deck scoring 7.
+
+After all individual scorecards:
+
+## Ranking Summary
+[Score] — Deck [LETTER] — [one-line decisive reason]
+${VOICE}`,
+
+content_grading: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
+
+TASK TYPE: Content Grading — grade each deck's written content across four specific dimensions.
+
+YOUR JOB — GRADE CONTENT, NOT VISUALS
+Evaluate the raw text in each slide deck and the information carried by charts, diagrams, and figures. Do NOT grade visual aesthetics, layout polish, typography, color, or style fidelity — except where they actively prevent the content from being understood.
+This is the OPPOSITE emphasis from Aesthetic Ranking and Style Matching tasks. Make the switch deliberately.
+Do not average slide scores. Evaluate each deck as a complete presentation. Give more weight to important slides and content failures that materially affect the audience's understanding.
+
+FOUR GRADING DIMENSIONS
+
+1. WRITING QUALITY — Is the language clear, natural, and easy for the intended audience to understand?
+   REWARD: Direct, precise language without unnecessary complexity. Natural phrasing and terminology appropriate to the audience. Concise writing that preserves meaning and avoids redundancy.
+   PENALIZE: Confusing, awkward, vague, or unnecessarily elaborate language. Generic or repetitive AI-generated filler, empty slogans, and self-referential text. Overuse of jargon, big words, formulaic phrasing, or excessive punctuation where simpler language would do.
+
+   Common AI slop to flag:
+   - Filler: polished text that says very little (e.g., "This strategy will unlock growth and drive meaningful impact")
+   - Boilerplate: generic content that could apply to almost any company (e.g., "We are committed to innovation, quality, and customer satisfaction")
+   - Placeholders: unfinished template text left in the deck (e.g., "[Insert company name] will target [audience...]")
+
+2. ORGANIZATION AND STORYTELLING — Does the deck organize its ideas into a coherent presentation?
+   REWARD: A clear structure that helps the audience understand how ideas relate. Strong prioritization of the most important information. Logical transitions and progression within slides and across the deck.
+   PENALIZE: Disconnected sections, abrupt transitions, or an unclear narrative through-line. Fact dumps, repetitive lists, or parallel modules that never build toward a conclusion. Poor prioritization that buries key ideas or over-weights minor details.
+
+3. COMPREHENSIVENESS AND SUBSTANCE — Does the deck include enough relevant, useful material to fulfill its purpose at the appropriate depth?
+   REWARD: Covers key concepts and details needed to understand the topic. Substantive explanations, examples, evidence, or implications rather than surface-level statements. Appropriate depth — neither missing important material nor padding with unnecessary volume. Images, figures, charts, and diagrams that contribute meaningful information.
+   PENALIZE: Important omissions, incomplete explanations, or sections that feel underdeveloped. Shallow content that names ideas without explaining them. Filler, repetition, or excessive detail that adds length without adding value. Decorative or irrelevant visuals that do not help communicate the content.
+
+4. GROUNDEDNESS AND ACCURACY — Are claims supported by and faithful to the provided source material? Do NOT independently fact-check through external research.
+   REWARD: Accurate representation of the source's claims, evidence, terminology, and level of certainty. Clear distinction between source-supported conclusions and the model's own interpretation. Appropriate use of source details without distortion or overstatement.
+   PENALIZE: Unsupported, invented, misleading, or contradictory claims. Misrepresentation of the source — including reversed conclusions or exaggerated certainty. Unadapted placeholders, fabricated citations, or details presented as sourced when they are not.
+
+FOREIGN LANGUAGE: Escalate ALL foreign-language tasks regardless of whether you understand the language. Do NOT translate.
+${SCORING_RULES_1_7}
+
+OUTPUT FORMAT:
+
+## Deck [LETTER]
+
+### Content Assessment
+
+**Writing Quality:** [Observations with slide citations. Name specific phrases or sentences that are examples of strong writing or AI slop.]
+
+**Organization and Storytelling:** [Observations with slide citations. Name specific transitions, sections, or structural choices.]
+
+**Comprehensiveness and Substance:** [Observations with slide citations. Name specific omissions or strong inclusions.]
+
+**Groundedness and Accuracy:** [Observations with slide citations. Note any claims that appear unsupported by or contradicted by the source material.]
+
+### Ranking
+[One paragraph synthesizing all four dimensions, weighting more important slides and failures appropriately. End with: Score: X/7]
+Reserve "the best" language only for the deck scoring 7.
+
+After all individual scorecards:
+
+## Ranking Summary
+[Score] — Deck [LETTER] — [one-line decisive reason]
+${VOICE}`,
+
+design_instructions: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
+
+TASK TYPE: Design Instructions — grade each deck against every single bullet in the provided design-instruction list.
+
+YOUR JOB
+The design instructions are a concise bullet list. The categories differ for every task and might include typography, color palette, layout system, spacing, visual density, imagery and icon treatment, chart and table treatment, visual hierarchy, reusable motifs, branding elements, slide-to-slide rhythm, page-family patterns, or explicit do/don't rules.
+
+CRITICAL RULES
+- Assess EVERY bullet in the prompt, not just the most visible ones
+- Penalize any missed, weakened, genericized, or contradicted style instruction — even if the deck is otherwise attractive
+- Missing even one bullet will reflect poorly on the evaluation
+- Keep per-bullet findings specific to each response — do not write generic observations
+- Rationales for this task type are much longer than three sentences
+
+FORMAT — produce THREE parts for every deck:
+
+## Deck [LETTER]
+
+### Guideline Flags
+[Copy each design-instruction bullet verbatim. Immediately below each bullet write:]
+Flag: [Met / Partially Met / Not Met] — [Cite the specific slide number and the concrete visual element. 1–2 sentences of specific evidence.]
+
+### Aesthetic
+[One paragraph describing ONLY what is visually present on the slides: color palette, typography choices, layout, whitespace, visual hierarchy, imagery quality, spacing, and readability. This paragraph has one job — describe what the eye sees. Do NOT reference the design brief, the prompt, or the task instructions. Do NOT judge whether the content is accurate, whether the right document was used, whether information was distilled or faithfully sourced, or whether the deck fulfilled its intended purpose. Do NOT write about what the deck "should have been." Any sentence that begins with "This is not…" or "This deck was supposed to…" is wrong for this section. Describe only what is literally on the pages.]
+
+### Ranking
+[One paragraph synthesizing guideline adherence and aesthetics. End with: Score: X/7]
+Reserve "the best" language only for the deck scoring 7. Match the tone of the rationale to the position on the ladder.
+
+FOREIGN LANGUAGE: Escalate ONLY if the design guidelines or user prompt are not in English. Do NOT escalate if the deck itself is in a foreign language. Do NOT translate.
+${SCORING_RULES_1_7}
+
+After all individual scorecards:
+
+## Ranking Summary
+[Score] — Deck [LETTER] — [one-line decisive reason]
+${VOICE}`,
+
+complete_the_deck: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
+
+TASK TYPE: Complete the Deck — rank each deck by how well its suffix slides continue the provided prefix deck.
+
+YOUR JOB
+A prefix slide deck is provided as the starting point. Each response is a suffix — continuation slides meant to finish the deck. Rank each response by how well its content and style align with the prefix slides.
+
+WHAT TO JUDGE (in order of importance)
+1. Continuation content — Does the suffix include the specific slides and content that were requested? Check that requested slides, exact titles, figures, and wording are present.
+2. Narrative continuity — Do the suffix slides pick up the prefix narrative naturally and lead into what comes next? Rank how naturally each suffix continues the existing deck, not how it looks on its own.
+3. Style match to prefix — Does the suffix match the prefix's typography, colors, spacing, visual density, page chrome, logos and footers, reusable components, layout conventions, and polish? Treat the prefix deck as the template; drift from it is the main thing to flag.
+4. Visual polish — Are the suffix slides clean, readable, and free of major errors?
+
+PENALIZE
+- Missing requested content (specific slides with specific titles/figures)
+- Weak narrative continuity (the story doesn't flow naturally from the prefix)
+- Style drift — different fonts, colors, spacing, or layout conventions from the prefix
+- Generic redesigns that abandon the prefix system and substitute their own look
+- Clutter, broken layout, low readability, or visually non-native slides
+- A polished redesign is NOT a pass. Fidelity to the prefix template beats a clean but off-brief redesign.
+
+FOREIGN LANGUAGE: Escalate ALL foreign-language tasks regardless of whether you understand the language.
+${SCORING_RULES_1_7}
+
+OUTPUT FORMAT:
+
+## Deck [LETTER]
+
+### Completion Analysis
+[Go through the suffix slide by slide and compare to the prefix. Note: which requested content is present or missing; how naturally the narrative flows from the prefix; where style matches or drifts from the prefix; and any major visual errors. Cite specific prefix and suffix slide numbers and compare them directly.]
+
+### Ranking
+[One paragraph synthesizing continuation quality, narrative flow, and style match. End with: Score: X/7]
+Reserve "the best" language only for the deck scoring 7.
+
+After all individual scorecards:
+
+## Ranking Summary
+[Score] — Deck [LETTER] — [one-line decisive reason]
+${VOICE}`,
+
+ab_preferences: () => `You are a professional evaluator for the Feather / Mercor "Les Artistes" platform.
+
+TASK TYPE: A/B Preferences — pick the single deck (A or B) that better adheres to the user prompt and is more visually appealing.
+
+YOUR JOB
+Two decks were generated from the same prompt. Pick the one that better satisfies the prompt AND is more visually appealing. This is a pairwise choice — NOT a 1-7 ranking.
+
+WHAT DRIVES THE DECISION
+1. Visual appeal (primary): strong typography and hierarchy, color harmony, consistency, spacing, absence of clutter. The cleaner, more polished, more professional deck wins.
+2. Prompt adherence (tie-breaker and gate): the deck must do what the prompt asked. Note in one sentence how well the chosen deck addresses the prompt.
+
+WHAT NOT TO JUDGE
+- Content accuracy, factual completeness, writing quality, or argument strength — these are out of scope
+- Do not pick based on which deck has more impressive-sounding content
+
+RATIONALE REQUIREMENTS
+- Write at least five robust sentences total
+- Lead with one sentence on prompt faithfulness
+- Then explain why the chosen deck is the more visually appealing of the two
+- Cite specific slides and specific visual properties (typography, color, spacing, hierarchy, clutter)
+- Mention at least one specific visual weakness of the deck not chosen
+
+FOREIGN LANGUAGE: Escalate ALL foreign-language tasks regardless of whether you understand the language.
+
+OUTPUT FORMAT:
+
+## My Choice: Deck [A or B]
+
+### Why This Deck
+[At least five sentences. Start with prompt faithfulness, then explain the visual appeal with specific slide citations and visual property comparisons. End with one sentence on the specific weakness of the other deck.]
+${VOICE}`,
+
+deck_outlines: () => `You are a professional evaluator for the Feather / Mercor "Les Artistes" platform.
+
+TASK TYPE: Deck Outlines — pick the single outline (A or B) that better satisfies the prompt through clearer narrative structure, stronger logical flow, and higher-quality writing.
+
+YOUR JOB
+Two outlines were generated from the same prompt. Pick the one that better satisfies the prompt. This is a pairwise choice — NOT a 1-7 ranking.
+
+WHAT TO JUDGE
+- Narrative structure: which outline has a clearer, better-organized narrative arc?
+- Logical flow: do sections progress in a sensible, well-motivated order with clear transitions?
+- Writing quality: is the wording clear, natural, and well-expressed?
+- Completeness: does it cover the necessary topics at appropriate depth?
+- Prompt adherence: does it actually address what was asked for?
+
+WHAT NOT TO JUDGE
+- Visual design or aesthetics (these are outlines, not final slides)
+- Factual accuracy of the content — do not independently fact-check
+
+RATIONALE REQUIREMENTS
+- Explain why the selected outline better addresses the prompt
+- Cite specific sections, transitions, or wording from both outlines
+- Focus on narrative quality, completeness, and writing quality
+- At least five sentences total
+
+FOREIGN LANGUAGE: Escalate ALL foreign-language tasks regardless of whether you understand the language.
+
+OUTPUT FORMAT:
+
+## My Choice: Outline [A or B]
+
+### Why This Outline
+[At least five sentences citing specific sections, transitions, or wording from both outlines. Focus on structure, flow, completeness, and writing quality.]
+
+### What Holds Back Outline [The Other]
+[One or two sentences on specific structural or writing weaknesses of the outline not chosen.]
+${VOICE}`,
+
+};
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let ST = {
+  provider: 'google',
+  taskType: 'aesthetic_ranking',
+  decks: [],
+  refSlides: [],
+  rawResult: '',
+  isEnterprise: false,
+};
+const LTRS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  setProvider('google', document.querySelector('#ptabsSidebar [data-p="google"]'));
+  setTaskType('aesthetic_ranking');
+  addDeck(); addDeck(); addDeck();
+});
+
+/* ══════════════════════════════════════
+   PROVIDER & MODEL
+══════════════════════════════════════ */
+function setProvider(p, btn, mobile=false) {
+  ST.provider = p;
+  const prov = PROVIDERS[p];
+  ['ptabsSidebar','ptabsMobile'].forEach(id => {
+    const w = document.getElementById(id);
+    if (!w) return;
+    w.querySelectorAll('.ptab').forEach(t => t.classList.toggle('active', t.dataset.p === p));
+  });
+  ['modelSelect','modelSelectM'].forEach(id => {
+    const s = document.getElementById(id);
+    if (!s) return;
+    s.innerHTML = prov.models.map((m,i) => `<option value="${m.id}"${i===prov.defaultIdx?' selected':''}>${m.label}</option>`).join('');
+  });
+  ['apiKey','apiKeyM'].forEach(id => { const i = document.getElementById(id); if (i) i.placeholder = prov.hint; });
+  const n = document.getElementById('keyNote'); if (n) n.textContent = prov.note || '';
+  document.getElementById('hProvChip').textContent = prov.name;
+  updatePriceNote();
+  validateKey();
+  updateGradeBtn();
+}
+
+function syncModel(from) {
+  const src = from==='mobile' ? 'modelSelectM' : 'modelSelect';
+  const dst = from==='mobile' ? 'modelSelect' : 'modelSelectM';
+  const sv = document.getElementById(src).value;
+  document.getElementById(dst).value = sv;
+  updatePriceNote();
+  updateGradeBtn();
+}
+
+function updatePriceNote() {
+  const v = document.getElementById('modelSelect').value;
+  const m = PROVIDERS[ST.provider]?.models.find(x => x.id===v);
+  const txt = m ? `💰 ${m.price}` : '';
+  ['priceNote','priceNoteM'].forEach(id => { const e=document.getElementById(id); if (e) e.textContent=txt; });
+  document.getElementById('hModelChip').textContent = m ? m.label.replace(' ⭐','') : '–';
+}
+
+/* ══════════════════════════════════════
+   KEY
+══════════════════════════════════════ */
+function getKey() { return (document.getElementById('apiKey').value||document.getElementById('apiKeyM').value||'').trim(); }
+function syncKey(from) {
+  const sv = from==='mobile' ? document.getElementById('apiKeyM').value : document.getElementById('apiKey').value;
+  const dst = from==='mobile' ? 'apiKey' : 'apiKeyM';
+  document.getElementById(dst).value = sv;
+  validateKey();
+}
+function validateKey() {
+  const key = getKey(); const p = ST.provider;
+  let ok=false, warn=false, txt='Enter key to begin';
+  if (key) {
+    if (p==='anthropic'&&key.startsWith('sk-ant-')) { ok=true; txt='Key looks valid'; }
+    else if (p==='google'&&key.startsWith('AIza')) { ok=true; txt='Key looks valid'; }
+    else if (p==='openai'&&key.startsWith('sk-')) { ok=true; txt='Key looks valid'; }
+    else if (p==='kimi') { ok=true; txt='Key entered'; }
+    else { warn=true; txt='Key format looks off'; }
+  }
+  ['kDot','kDotM'].forEach(id => {
+    const d = document.getElementById(id); if (!d) return;
+    d.className = 'dot'+(ok?' ok':warn?' warn':'');
+  });
+  ['kTxt','kTxtM'].forEach(id => { const e=document.getElementById(id); if (e) e.textContent=txt; });
+  updateGradeBtn();
+}
+function toggleKey() { ['apiKey','apiKeyM'].forEach(id => { const i=document.getElementById(id); if (i) i.type = i.type==='password'?'text':'password'; }); }
+
+/* ══════════════════════════════════════
+   TASK TYPE
+══════════════════════════════════════ */
+function setTaskType(t) {
+  ST.taskType = t;
+  document.getElementById('taskTypeSelect').value = t;
+  const cfg = TASK_CFG[t];
+
+  // Enterprise toggle
+  document.getElementById('enterpriseSection').classList.toggle('show', !!cfg.hasEnt);
+
+  // Guidelines
+  const glEl = document.getElementById('sidebarGuidelines');
+  const glMob = document.getElementById('mobGuidelines');
+  if (cfg.hasGl) {
+    glEl.classList.add('show'); if (glMob) glMob.style.display='block';
+  } else {
+    glEl.classList.remove('show'); if (glMob) glMob.style.display='none';
+  }
+
+  // Reference section
+  const refSec = document.getElementById('refSection');
+  if (cfg.hasRef) {
+    refSec.classList.remove('hidden');
+    document.getElementById('refTitle').textContent = cfg.refTitle || 'Reference Deck';
+    document.getElementById('refSub').textContent = (cfg.refOptional ? '[Optional] ' : '') + (cfg.refSub || '');
+  } else {
+    refSec.classList.add('hidden');
+  }
+
+  // Decks section title
+  document.getElementById('decksSectionSub').textContent = cfg.decksSub || 'Upload slide images for each deck';
+
+  // Fixed deck count for A/B tasks
+  const addBtn = document.getElementById('addDeckBtn');
+  if (cfg.fixedCount) {
+    // Ensure exactly fixedCount decks
+    while (ST.decks.length < cfg.fixedCount) addDeck(true);
+    while (ST.decks.length > cfg.fixedCount) ST.decks.pop();
+    addBtn.classList.add('hidden');
+    renderDecks();
+  } else {
+    addBtn.classList.remove('hidden');
+  }
+
+  // Sidebar hint
+  const hints = {
+    aesthetic_ranking:   {title:'Aesthetic Ranking (45 min)', body:'Rank by overall visual quality. Enterprise prompts: apply enterprise aesthetic checklist. Non-enterprise: general quality only. No reference deck.'},
+    style_matching:      {title:'Style Matching (45 min)',     body:'A reference deck is the style guide. Rank by how well each response captures its look and feel — not pixel-perfect reproduction. Faithful-to-style beats polished-but-divergent.'},
+    template_following:  {title:'Template Following (45 min)', body:'Fill-in-the-blank template. 1:1 slide mapping. Fill only marked placeholders; leave everything else exactly as-is. Preserving the template beats looking better.'},
+    template_creation:   {title:'Template Creation (45 min)',  body:'No 1:1 mapping or explicit blanks. New slides expected. Layouts, components, and structural patterns must match the template exactly — not just resemble it.'},
+    content_grading:     {title:'Content Grading (45 min)',    body:'Judge content only — never visual aesthetics. Four dimensions: Writing Quality, Organization & Storytelling, Comprehensiveness & Substance, Groundedness & Accuracy.'},
+    design_instructions: {title:'Design Instructions (120 min)',body:'Grade against every bullet in the design brief. Copy each bullet verbatim into the rationale. Penalize missed, weakened, genericized, or contradicted instructions.'},
+    complete_the_deck:   {title:'Complete the Deck (45 min)',  body:'Prefix deck provided. Each response is a suffix (continuation). Judge: requested content present, narrative continuity, style match to prefix, visual polish. Polished redesign ≠ pass.'},
+    ab_preferences:      {title:'A/B Preferences (45 min)',    body:'Pairwise pick between Deck A and B — NOT a 1–7 ranking. Visual appeal is the primary driver. Prompt adherence is the tie-breaker. At least 5 sentences of rationale.'},
+    deck_outlines:       {title:'Deck Outlines (45 min)',       body:'Pairwise pick between Outline A and B. Judge narrative structure, logical flow, writing quality, completeness. Not visual design or factual accuracy.'},
+  };
+  const h = hints[t] || {};
+  document.getElementById('sidebarHintTitle').textContent = h.title || '';
+  document.getElementById('sidebarHintBody').textContent = h.body || '';
+
+  // Timer chip
+  document.getElementById('hTimerChip').textContent = cfg.time;
+
+  updateGradeBtn();
+}
+
+/* ══════════════════════════════════════
+   GUIDELINES SYNC
+══════════════════════════════════════ */
+function getGuidelines() { return (document.getElementById('guidelines').value||document.getElementById('guidelinesM')?.value||'').trim(); }
+function syncGl() {
+  const v = document.getElementById('guidelinesM')?.value||'';
+  const gl = document.getElementById('guidelines');
+  if (gl) gl.value = v;
+  updateGradeBtn();
+}
+
+/* ══════════════════════════════════════
+   REFERENCE SLIDES
+══════════════════════════════════════ */
+function triggerRefUpload() { document.getElementById('refInput').click(); }
+function handleRefFiles(files) {
+  const arr = Array.from(files).filter(f=>f.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+  Promise.all(arr.map(f => new Promise(res => {
+    const r = new FileReader();
+    r.onload = e => {
+      const [,mt,,b64] = e.target.result.match(/^data:([^;]+)(;base64)?,(.*)$/);
+      ST.refSlides.push({dataUrl:e.target.result, name:f.name, mediaType:mt, b64});
+      res();
+    };
+    r.readAsDataURL(f);
+  }))).then(renderRefThumbs);
+}
+function renderRefThumbs() {
+  const tg = document.getElementById('refThumbs');
+  tg.innerHTML = '';
+  ST.refSlides.forEach((sl,i) => {
+    const w = document.createElement('div');
+    w.className = 'thumb';
+    w.innerHTML = `<img src="${sl.dataUrl}" alt=""><span class="thumb-n">${i+1}</span><button class="thumb-del" onclick="ST.refSlides.splice(${i},1);renderRefThumbs();event.stopPropagation()">✕</button>`;
+    tg.appendChild(w);
+  });
+  const m = document.getElementById('refMeta');
+  if (m) m.textContent = `${ST.refSlides.length} slide${ST.refSlides.length!==1?'s':''}`;
+  updateGradeBtn();
+}
+
+/* ══════════════════════════════════════
+   DECKS
+══════════════════════════════════════ */
+function addDeck(silent=false) {
+  if (ST.decks.length >= 26) { if (!silent) showToast('Max 26 decks.','err'); return; }
+  ST.decks.push({letter:LTRS[ST.decks.length], slides:[]});
+  renderDecks();
+  updateDeckChip();
+}
+function removeDeck(i) {
+  ST.decks.splice(i,1);
+  ST.decks.forEach((d,j)=>d.letter=LTRS[j]);
+  renderDecks(); updateDeckChip(); updateGradeBtn();
+}
+function clearDecks() {
+  ST.decks=[];
+  const cfg = TASK_CFG[ST.taskType];
+  const target = cfg.fixedCount || 3;
+  for (let i=0;i<target;i++) addDeck(true);
+  renderDecks(); updateDeckChip(); updateGradeBtn();
+}
+function renderDecks() {
+  const grid = document.getElementById('decksGrid');
+  grid.innerHTML = '';
+  ST.decks.forEach((deck,idx) => {
+    const el = document.createElement('div');
+    el.className = 'deck-card'+(deck.slides.length?' has-slides':'');
+    const cfg = TASK_CFG[ST.taskType];
+    const showRemove = !cfg.fixedCount;
+    el.innerHTML = `
+      <div class="deck-top">
+        <span class="deck-letter">Deck ${deck.letter}</span>
+        <span class="deck-meta">${deck.slides.length} slide${deck.slides.length!==1?'s':''}</span>
+        ${showRemove?`<button class="btn-danger" onclick="removeDeck(${idx})">✕</button>`:''}
+      </div>
+      <div class="dz" id="dz_${idx}" onclick="triggerUpload(${idx})" ondragover="dzOver(event,'${idx}')" ondragleave="dzLeave('${idx}')" ondrop="dzDrop(event,'${idx}')">
+        <input type="file" accept="image/*" multiple id="fi_${idx}" onchange="handleFiles(${idx},this.files)">
+        <div class="dz-icon">📁</div>
+        <div>Click or drag slides</div>
+        <div class="small dim" style="margin-top:2px">PNG · JPG · WEBP</div>
+      </div>
+      <div class="thumb-row" id="tg_${idx}"></div>`;
+    grid.appendChild(el);
+    renderThumbs(idx);
+  });
+}
+function renderThumbs(idx) {
+  const tg = document.getElementById(`tg_${idx}`);
+  if (!tg) return;
+  tg.innerHTML = '';
+  ST.decks[idx].slides.forEach((sl,si) => {
+    const w = document.createElement('div');
+    w.className = 'thumb';
+    w.innerHTML = `<img src="${sl.dataUrl}" alt=""><span class="thumb-n">${si+1}</span><button class="thumb-del" onclick="removeSlide(${idx},${si});event.stopPropagation()">✕</button>`;
+    tg.appendChild(w);
+  });
+  const meta = document.querySelector(`#decksGrid .deck-card:nth-child(${idx+1}) .deck-meta`);
+  if (meta) meta.textContent = `${ST.decks[idx].slides.length} slide${ST.decks[idx].slides.length!==1?'s':''}`;
+  document.getElementById(`decksGrid`)?.children[idx]?.classList.toggle('has-slides', ST.decks[idx].slides.length > 0);
+  updateGradeBtn();
+  updateDeckChip();
+}
+function removeSlide(di,si) { ST.decks[di].slides.splice(si,1); renderThumbs(di); }
+function triggerUpload(idx) { document.getElementById(`fi_${idx}`)?.click(); }
+function dzOver(e,idx) { e.preventDefault(); document.getElementById(`dz_${idx}`)?.classList.add('over'); }
+function dzLeave(idx) { document.getElementById(`dz_${idx}`)?.classList.remove('over'); }
+function dzDrop(e,idx) { e.preventDefault(); dzLeave(idx); handleFiles(idx, e.dataTransfer.files); }
+function handleFiles(idx, files) {
+  const arr = Array.from(files).filter(f=>f.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+  Promise.all(arr.map(f => new Promise(res => {
+    const r = new FileReader();
+    r.onload = e => {
+      const [,mt,,b64] = e.target.result.match(/^data:([^;]+)(;base64)?,(.*)$/);
+      ST.decks[idx].slides.push({dataUrl:e.target.result, name:f.name, mediaType:mt, b64});
+      res();
+    };
+    r.readAsDataURL(f);
+  }))).then(()=>renderThumbs(idx));
+}
+function updateDeckChip() { document.getElementById('hDeckChip').textContent = `${ST.decks.length} deck${ST.decks.length!==1?'s':''}`; }
+
+/* ══════════════════════════════════════
+   GRADE BUTTON STATE
+══════════════════════════════════════ */
+function updateGradeBtn() {
+  const key = getKey();
+  const gl = getGuidelines();
+  const cfg = TASK_CFG[ST.taskType];
+  const hasSlides = ST.decks.some(d=>d.slides.length>0);
+  const hasRef = !cfg.hasRef || cfg.refOptional || ST.refSlides.length > 0;
+  const hasGl = !cfg.hasGl || gl.length > 0;
+  const model = document.getElementById('modelSelect').value;
+  const ok = key && hasSlides && hasRef && hasGl && model;
+  document.getElementById('gradeBtn').disabled = !ok;
+
+  const strong = document.getElementById('gradeStrong');
+  const sub = document.getElementById('gradeSub');
+  if (!key) { strong.textContent='No API key'; sub.textContent=' — enter your key'; return; }
+  if (cfg.hasGl && !gl) { strong.textContent='No guidelines'; sub.textContent=' — paste the design brief'; return; }
+  if (cfg.hasRef && !cfg.refOptional && !ST.refSlides.length) { strong.textContent='No reference'; sub.textContent=' — upload the reference shown in the task'; return; }
+  if (!hasSlides) { strong.textContent='No slides'; sub.textContent=' — upload images for at least one deck'; return; }
+  const total = ST.decks.reduce((s,d)=>s+d.slides.length,0);
+  const active = ST.decks.filter(d=>d.slides.length>0).length;
+  strong.textContent = `${active} deck${active!==1?'s':''}, ${total} slide${total!==1?'s':''}`;
+  sub.textContent = ' — ready to grade';
+}
+
+/* ══════════════════════════════════════
+   BUILD MESSAGE CONTENT
+══════════════════════════════════════ */
+function buildContent(activeDecks) {
+  const cfg = TASK_CFG[ST.taskType];
+  const gl = getGuidelines();
+  const parts_text = [];
+  const parts_all = [];
+
+  // Intro
+  let intro = `Please grade the following ${activeDecks.length} deck${activeDecks.length!==1?'s':''}.`;
+  if (cfg.hasGl && gl) intro = `Design Guidelines:\n${gl}\n\n${intro}`;
+  if (ST.refSlides.length) intro += `\n\nThe reference (${cfg.refTitle || 'Reference'}) is uploaded below, followed by the response decks to grade.`;
+  parts_all.push({type:'text', text:intro});
+
+  // Reference slides
+  if (ST.refSlides.length) {
+    parts_all.push({type:'text', text:`\n--- ${cfg.refTitle || 'Reference Deck'} ---`});
+    ST.refSlides.forEach((sl,i) => {
+      parts_all.push({type:'text', text:`Reference Slide ${i+1}:`});
+      parts_all.push({type:'image', _mediaType:sl.mediaType, _b64:sl.b64, _url:sl.dataUrl});
+    });
+  }
+
+  // Deck slides
+  for (const deck of activeDecks) {
+    parts_all.push({type:'text', text:`\n--- Deck ${deck.letter} (${deck.slides.length} slide${deck.slides.length!==1?'s':''}) ---`});
+    deck.slides.forEach((sl,i) => {
+      parts_all.push({type:'text', text:`Deck ${deck.letter}, Slide ${i+1}:`});
+      parts_all.push({type:'image', _mediaType:sl.mediaType, _b64:sl.b64, _url:sl.dataUrl});
+    });
+  }
+  return parts_all;
+}
+
+/* ══════════════════════════════════════
+   API CALLS
+══════════════════════════════════════ */
+async function startGrading() {
+  const key = getKey();
+  const model = document.getElementById('modelSelect').value;
+  const isEnt = document.getElementById('enterpriseToggle').checked;
+  const activeDecks = ST.decks.filter(d=>d.slides.length>0);
+  if (!activeDecks.length) { showToast('Upload slides first.','err'); return; }
+
+  const sysPromptFn = SYS[ST.taskType];
+  const systemPrompt = sysPromptFn ? sysPromptFn(isEnt) : '';
+  const contentParts = buildContent(activeDecks);
+
+  setProgress(true,'Building message…',5);
+  document.getElementById('emptyState').classList.add('hidden');
+  document.getElementById('resultsWrap').classList.remove('show');
+  document.getElementById('valBanner').classList.remove('show');
+
+  try {
+    let result = '';
+    const p = ST.provider;
+    if (p==='anthropic') result = await callAnthropic(key,model,systemPrompt,contentParts);
+    else if (p==='google') result = await callGoogle(key,model,systemPrompt,contentParts);
+    else result = await callOpenAI(key,model,systemPrompt,contentParts,p);
+
+    setProgress(true,'Parsing results…',95);
+    ST.rawResult = result;
+
+    // Validate
+    const cfg = TASK_CFG[ST.taskType];
+    const vResult = validateOutput(result, ST.taskType, activeDecks.length);
+    showValidation(vResult);
+
+    setTimeout(() => { setProgress(false); displayResults(result); }, 300);
+  } catch(err) {
+    setProgress(false);
+    document.getElementById('emptyState').classList.remove('hidden');
+    showToast(`Error: ${err.message}`,'err');
+  }
+}
+
+/* Anthropic */
+async function callAnthropic(key, model, sysPrompt, parts) {
+  setProgress(true,`Sending to Anthropic (${model})…`,20);
+  const content = parts.map(p => {
+    if (p.type==='text') return {type:'text', text:p.text};
+    return {type:'image', source:{type:'base64', media_type:p._mediaType, data:p._b64}};
+  });
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-allow-browser':'true','anthropic-beta':'prompt-caching-2024-07-31'},
+    body: JSON.stringify({
+      model, max_tokens:8192,
+      system:[{type:'text', text:sysPrompt, cache_control:{type:'ephemeral'}}],
+      messages:[{role:'user', content}],
+    }),
+  });
+  setProgress(true,'Waiting for Anthropic…',60);
+  if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${resp.status}`); }
+  const data = await resp.json();
+  return data.content?.[0]?.text || '';
+}
+
+/* Google Gemini */
+async function callGoogle(key, model, sysPrompt, parts) {
+  setProgress(true,`Sending to Google Gemini (${model})…`,20);
+  const gparts = parts.map(p => {
+    if (p.type==='text') return {text:p.text};
+    return {inline_data:{mime_type:p._mediaType, data:p._b64}};
+  });
+  const body = {
+    system_instruction:{parts:[{text:sysPrompt}]},
+    contents:[{role:'user', parts:gparts}],
+    generationConfig:{maxOutputTokens:8192, temperature:0.3},
+  };
+  setProgress(true,'Waiting for Gemini…',60);
+  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body),
+  });
+  if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${resp.status}`); }
+  const data = await resp.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+/* OpenAI / Kimi */
+async function callOpenAI(key, model, sysPrompt, parts, prov) {
+  const base = prov==='kimi' ? 'https://api.moonshot.ai/v1' : 'https://api.openai.com/v1';
+  setProgress(true,`Sending to ${PROVIDERS[prov].name} (${model})…`,20);
+  const ucontent = parts.map(p => {
+    if (p.type==='text') return {type:'text', text:p.text};
+    return {type:'image_url', image_url:{url:`data:${p._mediaType};base64,${p._b64}`}};
+  });
+  setProgress(true,`Waiting for ${PROVIDERS[prov].name}…`,60);
+  const resp = await fetch(`${base}/chat/completions`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+    body:JSON.stringify({model, max_tokens:8192, temperature:0.3, messages:[{role:'system',content:sysPrompt},{role:'user',content:ucontent}]}),
+  });
+  if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${resp.status}`); }
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+/* ══════════════════════════════════════
+   VALIDATION
+══════════════════════════════════════ */
+function validateOutput(raw, taskType, deckCount) {
+  const cfg = TASK_CFG[taskType];
+  const warnings = [];
+
+  if (cfg.output === 'ab') {
+    const cm = raw.match(/My Choice:\s*(?:Deck\s*|Outline\s*)?([AB])/i);
+    if (!cm) warnings.push('Could not detect a clear A/B choice. Check the output manually.');
+    return warnings;
+  }
+
+  // 1-7 ranking validation
+  const scoreMatches = [...raw.matchAll(/Score:\s*(\d)\/7/gi)];
+  const scores = scoreMatches.map(m => parseInt(m[1]));
+
+  if (scores.length === 0) { warnings.push('No scores detected in output. The model may not have followed the format.'); return warnings; }
+
+  const ones = scores.filter(s=>s===1).length;
+  const sevens = scores.filter(s=>s===7).length;
+  if (ones===0) warnings.push('No deck scored 1. Every task must have exactly one 1 (worst).');
+  if (ones>1) warnings.push(`${ones} decks scored 1. Only one deck can be the worst — never tie on 1.`);
+  if (sevens===0) warnings.push('No deck scored 7. Every task must have exactly one 7 (best).');
+  if (sevens>1) warnings.push(`${sevens} decks scored 7. Only one deck can be the best — never tie on 7.`);
+
+  // Check for 3-way ties
+  const cnt = {};
+  scores.forEach(s => { cnt[s]=(cnt[s]||0)+1; });
+  Object.entries(cnt).forEach(([s,c]) => {
+    if (c>=3) warnings.push(`Score ${s} appears ${c} times. Maximum allowed is a 2-way tie — never 3-way or larger.`);
+  });
+
+  // Check for duplicates with fewer than 7 decks
+  if (deckCount < 7) {
+    Object.entries(cnt).forEach(([s,c]) => {
+      if (c>1) warnings.push(`Score ${s} appears ${c} times. With fewer than 7 decks, every score must be unique — no ties allowed.`);
+    });
+  }
+
+  // Check range usage for 7+ responses
+  if (deckCount >= 7 && scores.length >= 7) {
+    const unique = new Set(scores);
+    if (!unique.has(2)||!unique.has(3)||!unique.has(4)||!unique.has(5)||!unique.has(6)) {
+      warnings.push('The full 1–7 range is not being used. Space scores out to show real variability across the task.');
+    }
+  }
+
+  return warnings;
+}
+
+function showValidation(warnings) {
+  const banner = document.getElementById('valBanner');
+  const items = document.getElementById('valItems');
+  if (!warnings || warnings.length===0) { banner.classList.remove('show'); return; }
+  banner.classList.add('show');
+  items.innerHTML = warnings.map(w => `<div class="vb-item">${esc(w)}</div>`).join('');
+}
+
+/* ══════════════════════════════════════
+   DISPLAY RESULTS
+══════════════════════════════════════ */
+function displayResults(raw) {
+  const wrap = document.getElementById('resultsWrap');
+  wrap.classList.add('show');
+  document.getElementById('rawOut').textContent = raw;
+
+  const cfg = TASK_CFG[ST.taskType];
+  const ladderDiv = document.getElementById('ladderDiv');
+  const abDiv = document.getElementById('abResultDiv');
+  const deckDiv = document.getElementById('deckResultsDiv');
+  ladderDiv.innerHTML=''; abDiv.classList.add('hidden'); abDiv.innerHTML=''; deckDiv.innerHTML='';
+
+  if (cfg.output==='ab') {
+    // A/B choice rendering
+    const cm = raw.match(/##\s*My Choice:\s*(?:Deck\s*|Outline\s*)?([AB])/i);
+    const choice = cm ? cm[1].toUpperCase() : '?';
+    const rationale = raw.replace(/##\s*My Choice:.*?(?=\n)/i,'').trim();
+    abDiv.classList.remove('hidden');
+    abDiv.innerHTML = `
+      <div class="sub-lbl">CHOICE</div>
+      <div class="ab-choice">${ST.taskType==='deck_outlines'?'Outline':'Deck'} ${choice} ✓</div>
+      <div class="ab-rationale">${esc(rationale)}</div>`;
+  } else {
+    // Score ladder
+    const sumMatch = raw.match(/##\s*Ranking Summary([\s\S]*?)(?:$)/i);
+    if (sumMatch) {
+      sumMatch[1].trim().split('\n').filter(l=>l.trim()).forEach(line => {
+        const m = line.match(/(\d)\s*[—–\-]+\s*Deck\s*([A-Z])\s*[—–\-]+\s*(.*)/i);
+        if (!m) return;
+        const score=parseInt(m[1]); const letter=m[2].toUpperCase(); const reason=m[3].trim();
+        const pill=document.createElement('div'); pill.className='lpill';
+        let sc='smid'; if(score===7) sc='s7'; if(score===1) sc='s1';
+        pill.innerHTML=`<span class="lscore ${sc}">${score}</span><strong>Deck ${letter}</strong><span class="lreason dim">${esc(reason)}</span>`;
+        ladderDiv.appendChild(pill);
+      });
+    }
+
+    // Per-deck cards
+    const sections = raw.split(/(?=##\s*Deck\s+[A-Z])/i).filter(s=>/##\s*Deck\s+[A-Z]/i.test(s));
+    sections.forEach(sec => {
+      const lm = sec.match(/##\s*Deck\s+([A-Z])/i); if (!lm) return;
+      const letter = lm[1].toUpperCase();
+      const sm = sec.match(/Score:\s*(\d)\/7/i);
+      const score = sm ? parseInt(sm[1]) : null;
+
+      // Parse subsections
+      const flagsM = sec.match(/###\s*Guideline Flags([\s\S]*?)(?=###|$)/i);
+      const aeM    = sec.match(/###\s*Aesthetic([\s\S]*?)(?=###|$)/i);
+      const rankM  = sec.match(/###\s*Ranking([\s\S]*?)(?=###|$)/i);
+      const vaM    = sec.match(/###\s*Visual Assessment([\s\S]*?)(?=###|$)/i);
+      const smM    = sec.match(/###\s*Style Match Analysis([\s\S]*?)(?=###|$)/i);
+      const taM    = sec.match(/###\s*(?:Template|Structural|Completion|Content|Slide-by-Slide)[^#\n]*([\s\S]*?)(?=###|$)/i);
+
+      let sp='score-pill'; if(score===7)sp+=' s7'; if(score===1)sp+=' s1';
+      const el=document.createElement('div'); el.className='deck-result';
+      el.innerHTML=`
+        <div class="dr-hdr" onclick="toggleDR(this)">
+          <div class="dr-title">Deck ${letter}${score!==null?` <span class="${sp}">${score}/7</span>`:''}</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn-ghost small" onclick="copyDeck('${letter}',event)">Copy</button>
+            <span class="dr-chev">›</span>
+          </div>
+        </div>
+        <div class="dr-body" id="drb_${letter}">
+          ${flagsM?`<div><div class="sub-lbl">Guideline Flags</div><div class="flag-block">${renderFlags(flagsM[1].trim())}</div></div>`:''}
+          ${(vaM||smM||taM)?`<div><div class="sub-lbl">Analysis</div><div class="prose">${esc((vaM||smM||taM)[1].trim())}</div></div>`:''}
+          ${aeM?`<div><div class="sub-lbl">Aesthetic</div><div class="prose">${esc(aeM[1].trim())}</div></div>`:''}
+          ${rankM?`<div><div class="sub-lbl">Ranking</div><div class="prose">${esc(rankM[1].trim())}</div></div>`:''}
+        </div>`;
+      deckDiv.appendChild(el);
+      if (sections.length<=3) el.querySelector('.dr-body').classList.add('open');
+    });
+  }
+
+  wrap.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderFlags(text) {
+  return text.split('\n').map(line => {
+    const m = line.match(/^Flag:\s*(Met|Partially Met|Not Met)(.*)/i);
+    if (!m) return esc(line);
+    const cls = m[1]==='Met'?'flag-met':m[1]==='Partially Met'?'flag-partial':'flag-not';
+    return `<span class="${cls}">Flag: ${m[1]}</span>${esc(m[2])}`;
+  }).join('\n');
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toggleDR(hdr) {
+  hdr.classList.toggle('open');
+  hdr.nextElementSibling.classList.toggle('open');
+}
+
+/* ══════════════════════════════════════
+   PROGRESS
+══════════════════════════════════════ */
+function setProgress(show, label='', pct=0) {
+  document.getElementById('progWrap').classList.toggle('show',show);
+  document.getElementById('progLabel').textContent = label;
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('gradeBtn').disabled = show;
+}
+
+/* ══════════════════════════════════════
+   COPY / DOWNLOAD
+══════════════════════════════════════ */
+async function copyAll() {
+  try { await navigator.clipboard.writeText(ST.rawResult); showToast('All scorecards copied!','ok'); }
+  catch { showToast('Copy failed.','err'); }
+}
+async function copyDeck(letter,e) {
+  e.stopPropagation();
+  const m = ST.rawResult.match(new RegExp(`(##\\s*Deck\\s+${letter}[\\s\\S]*?)(?=##\\s*Deck\\s+[A-Z]|##\\s*Ranking Summary|$)`,'i'));
+  try { await navigator.clipboard.writeText(m?m[1].trim():''); showToast(`Deck ${letter} copied!`,'ok'); }
+  catch { showToast('Copy failed.','err'); }
+}
+function dlTxt() {
+  if (!ST.rawResult) return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([ST.rawResult],{type:'text/plain'}));
+  a.download=`feather-${ST.taskType}-${Date.now()}.txt`;
+  a.click();
+}
+function toggleRaw() {
+  const r=document.getElementById('rawOut');
+  r.classList.toggle('show');
+}
+
+/* ══════════════════════════════════════
+   GUIDE MODAL
+══════════════════════════════════════ */
+function showGuide() { document.getElementById('guideModal').style.display='block'; }
+function hideGuide() { document.getElementById('guideModal').style.display='none'; }
+document.getElementById('guideModal').addEventListener('click',function(e){if(e.target===this)hideGuide();});
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let _tt;
+function showToast(msg,type='') {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show'+(type?' '+type:'');
+  clearTimeout(_tt);
+  _tt=setTimeout(()=>t.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>
