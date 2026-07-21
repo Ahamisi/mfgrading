@@ -1168,18 +1168,33 @@ function syncGl() {
 /* ══════════════════════════════════════
    REFERENCE SLIDES
 ══════════════════════════════════════ */
+/* Compress image to max 1280px wide, JPEG quality 0.82 — keeps payload under 6MB for 20+ slides */
+function compressImage(file) {
+  return new Promise(res => {
+    const r = new FileReader();
+    r.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1280;
+        let w = img.width, h = img.height;
+        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = c.toDataURL('image/jpeg', 0.82);
+        const b64 = dataUrl.split(',')[1];
+        res({dataUrl, name:file.name, mediaType:'image/jpeg', b64});
+      };
+      img.src = ev.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+
 function triggerRefUpload() { document.getElementById('refInput').click(); }
 function handleRefFiles(files) {
   const arr = Array.from(files).filter(f=>f.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-  Promise.all(arr.map(f => new Promise(res => {
-    const r = new FileReader();
-    r.onload = e => {
-      const [,mt,,b64] = e.target.result.match(/^data:([^;]+)(;base64)?,(.*)$/);
-      ST.refSlides.push({dataUrl:e.target.result, name:f.name, mediaType:mt, b64});
-      res();
-    };
-    r.readAsDataURL(f);
-  }))).then(renderRefThumbs);
+  Promise.all(arr.map(f => compressImage(f).then(sl => ST.refSlides.push(sl)))).then(renderRefThumbs);
 }
 function renderRefThumbs() {
   const tg = document.getElementById('refThumbs');
@@ -1264,15 +1279,7 @@ function dzLeave(idx) { document.getElementById(`dz_${idx}`)?.classList.remove('
 function dzDrop(e,idx) { e.preventDefault(); dzLeave(idx); handleFiles(idx, e.dataTransfer.files); }
 function handleFiles(idx, files) {
   const arr = Array.from(files).filter(f=>f.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-  Promise.all(arr.map(f => new Promise(res => {
-    const r = new FileReader();
-    r.onload = e => {
-      const [,mt,,b64] = e.target.result.match(/^data:([^;]+)(;base64)?,(.*)$/);
-      ST.decks[idx].slides.push({dataUrl:e.target.result, name:f.name, mediaType:mt, b64});
-      res();
-    };
-    r.readAsDataURL(f);
-  }))).then(()=>renderThumbs(idx));
+  Promise.all(arr.map(f => compressImage(f).then(sl => ST.decks[idx].slides.push(sl)))).then(()=>renderThumbs(idx));
 }
 function updateDeckChip() { document.getElementById('hDeckChip').textContent = `${ST.decks.length} deck${ST.decks.length!==1?'s':''}`; }
 
