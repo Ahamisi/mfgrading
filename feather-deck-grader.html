@@ -486,6 +486,25 @@ button{cursor:pointer;font-family:var(--font);border-radius:var(--r);font-size:1
   </div>
 </div>
 
+<!-- Slide preview carousel modal -->
+<div id="carouselModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:600;flex-direction:column;align-items:center;justify-content:center;padding:16px" onclick="hideCarousel(event)">
+  <div style="max-width:min(900px,96vw);width:100%;display:flex;flex-direction:column;gap:12px" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div style="font-size:14px;font-weight:700;color:#fff" id="carTitle">Deck A</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:12px;color:var(--tx2)" id="carCounter">1 / 5</span>
+        <button class="btn-icon" onclick="hideCarousel()" style="font-size:18px;color:var(--tx)">✕</button>
+      </div>
+    </div>
+    <div style="position:relative;background:#000;border-radius:var(--r2);overflow:hidden;line-height:0">
+      <img id="carImg" src="" style="width:100%;max-height:75vh;object-fit:contain;display:block">
+      <button onclick="carNav(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:22px;padding:8px 12px;border-radius:var(--r);cursor:pointer;line-height:1">‹</button>
+      <button onclick="carNav(1)"  style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:22px;padding:8px 12px;border-radius:var(--r);cursor:pointer;line-height:1">›</button>
+    </div>
+    <div id="carStrip" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -503,7 +522,7 @@ const PROVIDERS = {
     ], defaultIdx:0,
   },
   google: {
-    name:'Google', hint:'AIza…',
+    name:'Google', hint:'Your Google AI Studio key…',
     note:'Get key at aistudio.google.com',
     models:[
       {id:'gemini-3.5-flash',      label:'Gemini 3.5 Flash ⭐',    price:'best value — GA stable'},
@@ -1075,7 +1094,7 @@ function validateKey() {
   let ok=false, warn=false, txt='Enter key to begin';
   if (key) {
     if (p==='anthropic'&&key.startsWith('sk-ant-')) { ok=true; txt='Key looks valid'; }
-    else if (p==='google'&&key.startsWith('AIza')) { ok=true; txt='Key looks valid'; }
+    else if (p==='google'&&key.length>10) { ok=true; txt='Key looks valid'; }
     else if (p==='openai'&&key.startsWith('sk-')) { ok=true; txt='Key looks valid'; }
     else if (p==='kimi') { ok=true; txt='Key entered'; }
     else { warn=true; txt='Key format looks off'; }
@@ -1204,7 +1223,7 @@ function renderRefThumbs() {
   ST.refSlides.forEach((sl,i) => {
     const w = document.createElement('div');
     w.className = 'thumb';
-    w.innerHTML = `<img src="${sl.dataUrl}" alt=""><span class="thumb-n">${i+1}</span><button class="thumb-del" onclick="ST.refSlides.splice(${i},1);renderRefThumbs();event.stopPropagation()">✕</button>`;
+    w.innerHTML = `<img src="${sl.dataUrl}" alt="" onclick="openRefCarousel(${i})" style="cursor:zoom-in"><span class="thumb-n">${i+1}</span><button class="thumb-del" onclick="ST.refSlides.splice(${i},1);renderRefThumbs();event.stopPropagation()">✕</button>`;
     tg.appendChild(w);
   });
   const m = document.getElementById('refMeta');
@@ -1265,7 +1284,7 @@ function renderThumbs(idx) {
   ST.decks[idx].slides.forEach((sl,si) => {
     const w = document.createElement('div');
     w.className = 'thumb';
-    w.innerHTML = `<img src="${sl.dataUrl}" alt=""><span class="thumb-n">${si+1}</span><button class="thumb-del" onclick="removeSlide(${idx},${si});event.stopPropagation()">✕</button>`;
+    w.innerHTML = `<img src="${sl.dataUrl}" alt="" onclick="openCarousel(${idx},${si})" style="cursor:zoom-in"><span class="thumb-n">${si+1}</span><button class="thumb-del" onclick="removeSlide(${idx},${si});event.stopPropagation()">✕</button>`;
     tg.appendChild(w);
   });
   const meta = document.querySelector(`#decksGrid .deck-card:nth-child(${idx+1}) .deck-meta`);
@@ -1402,7 +1421,7 @@ async function callAnthropic(key, model, sysPrompt, parts) {
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-allow-browser':'true','anthropic-beta':'prompt-caching-2024-07-31'},
     body: JSON.stringify({
-      model, max_tokens:8192,
+      model, max_tokens:16384,
       system:[{type:'text', text:sysPrompt, cache_control:{type:'ephemeral'}}],
       messages:[{role:'user', content}],
     }),
@@ -1413,25 +1432,54 @@ async function callAnthropic(key, model, sysPrompt, parts) {
   return data.content?.[0]?.text || '';
 }
 
-/* Google Gemini */
+/* Google Gemini — with auto-continuation on MAX_TOKENS */
 async function callGoogle(key, model, sysPrompt, parts) {
   setProgress(true,`Sending to Google Gemini (${model})…`,20);
   const gparts = parts.map(p => {
     if (p.type==='text') return {text:p.text};
     return {inline_data:{mime_type:p._mediaType, data:p._b64}};
   });
-  const body = {
-    system_instruction:{parts:[{text:sysPrompt}]},
-    contents:[{role:'user', parts:gparts}],
-    generationConfig:{maxOutputTokens:8192, temperature:0.3},
-  };
-  setProgress(true,'Waiting for Gemini…',60);
-  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{
-    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body),
-  });
-  if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${resp.status}`); }
-  const data = await resp.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  const genCfg = {maxOutputTokens:65536, temperature:0.3};
+
+  // Build conversation history for multi-turn continuation
+  let contents = [{role:'user', parts:gparts}];
+  let fullText = '';
+  let attempt = 0;
+  const MAX_CONT = 4; // up to 4 continuation turns
+
+  while (attempt <= MAX_CONT) {
+    const label = attempt === 0 ? 'Waiting for Gemini…' : `Continuing response (part ${attempt+1})…`;
+    setProgress(true, label, 40 + attempt * 15);
+
+    const body = {
+      system_instruction:{parts:[{text:sysPrompt}]},
+      contents,
+      generationConfig:genCfg,
+    };
+    const resp = await fetch(GEMINI_URL,{
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body),
+    });
+    if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${resp.status}`); }
+    const data = await resp.json();
+
+    const chunk = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const finishReason = data.candidates?.[0]?.finishReason;
+    fullText += chunk;
+
+    if (finishReason !== 'MAX_TOKENS' || !chunk) break; // done or stuck
+
+    // Add model turn + continuation prompt for next round
+    contents = [
+      {role:'user', parts:gparts},
+      {role:'model', parts:[{text:fullText}]},
+      {role:'user', parts:[{text:'Continue exactly where you left off. Do not repeat anything already written. Pick up mid-sentence if needed.'}]},
+    ];
+    attempt++;
+  }
+
+  return fullText;
 }
 
 /* OpenAI / Kimi */
@@ -1647,6 +1695,50 @@ function toggleRaw() {
 function showGuide() { document.getElementById('guideModal').style.display='block'; }
 function hideGuide() { document.getElementById('guideModal').style.display='none'; }
 document.getElementById('guideModal').addEventListener('click',function(e){if(e.target===this)hideGuide();});
+
+/* ══════════════════════════════════════
+   SLIDE CAROUSEL
+══════════════════════════════════════ */
+let _CAR = { slides:[], idx:0, title:'' };
+function openCarousel(deckIdx, startSlide=0) {
+  const deck = ST.decks[deckIdx];
+  if (!deck||!deck.slides.length) return;
+  _CAR = { slides: deck.slides, idx: startSlide, title: `Deck ${deck.letter}` };
+  renderCarousel();
+  document.getElementById('carouselModal').style.display='flex';
+  document.addEventListener('keydown', carKey);
+}
+function openRefCarousel(startSlide=0) {
+  if (!ST.refSlides.length) return;
+  _CAR = { slides: ST.refSlides, idx: startSlide, title: 'Reference Deck' };
+  renderCarousel();
+  document.getElementById('carouselModal').style.display='flex';
+  document.addEventListener('keydown', carKey);
+}
+function hideCarousel(e) {
+  if (e && e.target !== document.getElementById('carouselModal')) return;
+  document.getElementById('carouselModal').style.display='none';
+  document.removeEventListener('keydown', carKey);
+}
+function carNav(dir) {
+  _CAR.idx = (_CAR.idx + dir + _CAR.slides.length) % _CAR.slides.length;
+  renderCarousel();
+}
+function carKey(e) {
+  if (e.key==='ArrowLeft') carNav(-1);
+  if (e.key==='ArrowRight') carNav(1);
+  if (e.key==='Escape') { document.getElementById('carouselModal').style.display='none'; document.removeEventListener('keydown',carKey); }
+}
+function renderCarousel() {
+  const {slides,idx,title} = _CAR;
+  document.getElementById('carTitle').textContent = title;
+  document.getElementById('carCounter').textContent = `${idx+1} / ${slides.length}`;
+  document.getElementById('carImg').src = slides[idx].dataUrl;
+  const strip = document.getElementById('carStrip');
+  strip.innerHTML = slides.map((sl,i) => `
+    <img src="${sl.dataUrl}" onclick="_CAR.idx=${i};renderCarousel()" style="height:50px;width:auto;border-radius:4px;border:2px solid ${i===idx?'var(--acc)':'var(--bd)'};cursor:pointer;flex-shrink:0;object-fit:cover">`
+  ).join('');
+}
 
 /* ══════════════════════════════════════
    TOAST
