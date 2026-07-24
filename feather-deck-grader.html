@@ -301,9 +301,9 @@ button{cursor:pointer;font-family:var(--font);border-radius:var(--r);font-size:1
   </div>
   <!-- Task hint -->
   <div class="task-hint" id="sidebarHint"><strong id="sidebarHintTitle"></strong><span id="sidebarHintBody"></span></div>
-  <!-- Guidelines (Design Instructions only) -->
+  <!-- Guidelines (task-type dependent) -->
   <div class="guidelines-section" id="sidebarGuidelines" style="flex:1;display:flex;flex-direction:column;gap:8px">
-    <label class="lbl">Design Guidelines / Brief</label>
+    <label class="lbl" id="glLabel">Design Guidelines / Brief</label>
     <textarea id="guidelines" placeholder="Paste the full design brief here. Every bullet will be evaluated." style="flex:1;min-height:160px" oninput="updateGradeBtn()"></textarea>
   </div>
   <!-- Scoring rules -->
@@ -349,7 +349,7 @@ button{cursor:pointer;font-family:var(--font);border-radius:var(--r);font-size:1
     <!-- Mobile guidelines -->
     <div class="guidelines-section" id="mobGuidelines" style="display:none">
       <div style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:14px">
-        <label class="lbl">Design Guidelines</label>
+        <label class="lbl" id="glLabelM">Design Guidelines</label>
         <textarea id="guidelinesM" placeholder="Paste design brief…" style="min-height:120px;margin-top:8px" oninput="syncGl()"></textarea>
       </div>
     </div>
@@ -560,7 +560,7 @@ const TASK_CFG = {
   template_creation:   {label:'Template Creation',   time:'45 min', hasRef:true,  refOptional:false, hasGl:false, hasEnt:false, fixedCount:null, output:'1_7', refTitle:'Reference Template (guide)', refSub:'Upload the template reference deck. Responses build out new content using its structure.'},
   content_grading:     {label:'Content Grading',     time:'45 min', hasRef:true,  refOptional:true,  hasGl:false, hasEnt:false, fixedCount:null, output:'1_7', refTitle:'Reference Material (optional)', refSub:'Upload only if a reference deck is shown in the task. Use it as content context only — do not judge visual style against it.'},
   design_instructions: {label:'Design Instructions', time:'120 min',hasRef:false, refOptional:false, hasGl:true,  hasEnt:false, fixedCount:null, output:'1_7'},
-  complete_the_deck:   {label:'Complete the Deck',   time:'45 min', hasRef:true,  refOptional:false, hasGl:false, hasEnt:false, fixedCount:null, output:'1_7', refTitle:'Prefix Deck (existing slides)', refSub:'Upload the prefix slide deck. Each response is a continuation suffix graded against this prefix.'},
+  complete_the_deck:   {label:'Complete the Deck',   time:'45 min', hasRef:true,  refOptional:false, hasGl:true,  hasEnt:false, fixedCount:null, output:'1_7', refTitle:'Prefix Deck (existing slides)', refSub:'Upload the prefix slide deck. Each response is a continuation suffix graded against this prefix.', glLabel:'Task Instructions / Prompt', glPlaceholder:'Paste the full task prompt here — the list of slides the model was asked to create (e.g. "Slide 1: Financing / credit facility slide…"). The model will check whether each requested slide is present and correctly executed.'},
   ab_preferences:      {label:'A/B Preferences',     time:'45 min', hasRef:false, refOptional:false, hasGl:false, hasEnt:false, fixedCount:2,    output:'ab',  decksSub:'Upload Deck A and Deck B — exactly two decks generated from the same prompt.'},
   deck_outlines:       {label:'Deck Outlines',       time:'45 min', hasRef:false, refOptional:false, hasGl:false, hasEnt:false, fixedCount:2,    output:'ab',  decksSub:'Upload Outline A and Outline B — two outlines generated from the same prompt.'},
 };
@@ -935,10 +935,10 @@ complete_the_deck: () => `You are a professional scorecard writer for the Feathe
 TASK TYPE: Complete the Deck — rank each deck by how well its suffix slides continue the provided prefix deck.
 
 YOUR JOB
-A prefix slide deck is provided as the starting point. Each response is a suffix — continuation slides meant to finish the deck. Rank each response by how well its content and style align with the prefix slides.
+A prefix slide deck is provided as the starting point. A task prompt describing the specific slides to be created is also provided. Each response is a suffix — continuation slides meant to finish the deck. Rank each response by how well its content matches the requested slides AND how well it continues the prefix deck's style.
 
 WHAT TO JUDGE (in order of importance)
-1. Continuation content — Does the suffix include the specific slides and content that were requested? Check that requested slides, exact titles, figures, and wording are present.
+1. Continuation content — Does the suffix include every specific slide requested in the task prompt? Check that all requested slides are present with the correct titles, specific figures, statistics, and content details described in the prompt. Missing a requested slide is a major failure.
 2. Narrative continuity — Do the suffix slides pick up the prefix narrative naturally and lead into what comes next? Rank how naturally each suffix continues the existing deck, not how it looks on its own.
 3. Style match to prefix — Does the suffix match the prefix's typography, colors, spacing, visual density, page chrome, logos and footers, reusable components, layout conventions, and polish? Treat the prefix deck as the template; drift from it is the main thing to flag.
 4. Visual polish — Are the suffix slides clean, readable, and free of major errors?
@@ -1151,6 +1151,10 @@ function setTaskType(t) {
   // Guidelines
   const glEl = document.getElementById('sidebarGuidelines');
   const glMob = document.getElementById('mobGuidelines');
+  const glLabelTxt = cfg.glLabel || 'Design Guidelines / Brief';
+  const glPlaceholderTxt = cfg.glPlaceholder || 'Paste the full design brief here. Every bullet will be evaluated.';
+  ['glLabel','glLabelM'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent=glLabelTxt; });
+  ['guidelines','guidelinesM'].forEach(id => { const e=document.getElementById(id); if(e) e.placeholder=glPlaceholderTxt; });
   if (cfg.hasGl) {
     glEl.classList.add('show'); if (glMob) glMob.style.display='block';
   } else {
@@ -1369,7 +1373,7 @@ function updateGradeBtn() {
   const strong = document.getElementById('gradeStrong');
   const sub = document.getElementById('gradeSub');
   if (!key) { strong.textContent='No API key'; sub.textContent=' — enter your key'; return; }
-  if (cfg.hasGl && !gl) { strong.textContent='No guidelines'; sub.textContent=' — paste the design brief'; return; }
+  if (cfg.hasGl && !gl) { strong.textContent=`No ${cfg.glLabel||'guidelines'}`; sub.textContent=` — paste the ${cfg.glLabel?.toLowerCase()||'design brief'}`; return; }
   if (cfg.hasRef && !cfg.refOptional && !ST.refSlides.length) { strong.textContent='No reference'; sub.textContent=' — upload the reference shown in the task'; return; }
   if (!hasSlides) { strong.textContent='No slides'; sub.textContent=' — upload images for at least one deck'; return; }
   const total = ST.decks.reduce((s,d)=>s+d.slides.length,0);
@@ -1389,7 +1393,7 @@ function buildContent(activeDecks) {
 
   // Intro
   let intro = `Please grade the following ${activeDecks.length} deck${activeDecks.length!==1?'s':''}.`;
-  if (cfg.hasGl && gl) intro = `Design Guidelines:\n${gl}\n\n${intro}`;
+  if (cfg.hasGl && gl) intro = `${cfg.glLabel||'Design Guidelines'}:\n${gl}\n\n${intro}`;
   if (ST.refSlides.length) intro += `\n\nThe reference (${cfg.refTitle || 'Reference'}) is uploaded below, followed by the response decks to grade.`;
   parts_all.push({type:'text', text:intro});
 
