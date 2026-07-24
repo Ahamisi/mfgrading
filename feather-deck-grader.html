@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Feather Grader — Les Artistes</title>
+<title>MF Grader</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -571,13 +571,32 @@ const TASK_CFG = {
 const VOICE = `
 VOICE AND STYLE RULES
 - Neutral and objective throughout — no first-person pronouns
-- No em dashes
+- No em dashes. No colons introducing bolded terms. No robotic transitions: furthermore, moreover, in conclusion, it is important to note.
 - Do not use the word "faithful" unless referencing source material accuracy
 - No buzzwords: cohesive, seamless, robust, leverages, vibrant, dynamic, sophisticated, polished-and-divergent, etc.
 - Every visual observation must cite a slide number and name the specific element
-- Strong feedback: "Slide 4 has consistent spacing between content blocks, and Slide 7 uses a clear visual hierarchy with appropriately sized headings" — Weak feedback: "The polish is bad"
-- Clear, human, fluid prose — write like a thoughtful person, not a formal report
-- Do NOT validate factual claims through external research. Do NOT translate tasks.`;
+- Strong: "Slide 4 has consistent spacing between content blocks, and Slide 7 uses a clear visual hierarchy with appropriately sized headings" — Weak: "The polish is bad"
+- Clear, human, fluid prose — not a formal report. Vary sentence length naturally. Avoid grouping everything into threes.
+- Do NOT validate factual claims through external research. Do NOT translate tasks.
+
+ANTI-AI-WRITING RULES — these patterns will get the scorecard flagged. Avoid all of them:
+- No "Rule of Three": don't constantly group adjectives or examples into tight sets of three
+- No metronomic sentence rhythm: vary length and cadence, not every sentence the same beat
+- No colon-heavy bold lists inside prose paragraphs
+- No robotic sign-offs or filler closers of any kind
+- No vague generalizations — every claim needs a concrete visual anchor (slide number + element)
+- No sterile, flawless-sounding grammar that reads like a machine — write with some personality and directness
+- No forced transitions between sections
+- Take a definitive stance — do not present all sides neutrally when a deck is clearly better or worse`;
+
+const RATIONALE_QUALITY = `
+RATIONALE QUALITY RULES — apply to every scorecard section, every task type
+- Cite a slide number for every visual claim. "Slide 6 headline is left-aligned, per the prompt" is gradeable. "The headers look good" is not.
+- Do not jump to a score first and justify backward. Let the full observation-by-observation review drive the number.
+- The Ranking paragraph must run longer than three sentences. Weigh the severity of each issue, not just its presence.
+- General Aesthetics (where applicable) is its own section — judge alignment, spacing, consistency, and readability here. Do not use it to re-litigate guideline adherence.
+- Take a definitive stance. A deck that is clearly worse does not need its positives inflated to seem balanced. A deck that is clearly better does not need false caveats.
+- Vary the evidence across slides. Do not anchor every observation on the same one or two slides while ignoring the rest of the deck.`;
 
 const SCORING_RULES_1_7 = `
 SCORING RULES
@@ -679,6 +698,7 @@ After all individual scorecards:
 
 ## Ranking Summary
 [Score] — Deck [LETTER] — [one-line decisive reason]
+${RATIONALE_QUALITY}
 ${VOICE}`,
 
 style_matching: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
@@ -722,6 +742,7 @@ After all individual scorecards:
 
 ## Ranking Summary
 [Score] — Deck [LETTER] — [one-line decisive reason]
+${RATIONALE_QUALITY}
 ${VOICE}`,
 
 template_following: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
@@ -764,6 +785,7 @@ After all individual scorecards:
 
 ## Ranking Summary
 [Score] — Deck [LETTER] — [one-line decisive reason]
+${RATIONALE_QUALITY}
 ${VOICE}`,
 
 template_creation: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
@@ -805,6 +827,7 @@ After all individual scorecards:
 
 ## Ranking Summary
 [Score] — Deck [LETTER] — [one-line decisive reason]
+${RATIONALE_QUALITY}
 ${VOICE}`,
 
 content_grading: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
@@ -864,6 +887,7 @@ After all individual scorecards:
 
 ## Ranking Summary
 [Score] — Deck [LETTER] — [one-line decisive reason]
+${RATIONALE_QUALITY}
 ${VOICE}`,
 
 design_instructions: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
@@ -874,25 +898,26 @@ YOUR JOB
 The design instructions are a concise bullet list. The categories differ for every task and might include typography, color palette, layout system, spacing, visual density, imagery and icon treatment, chart and table treatment, visual hierarchy, reusable motifs, branding elements, slide-to-slide rhythm, page-family patterns, or explicit do/don't rules.
 
 CRITICAL RULES
-- Assess EVERY bullet in the prompt, not just the most visible ones
+- Assess EVERY bullet — go guideline-by-guideline, not overall-impression first
+- Each bullet gets its own Met / Partially Met / Not Met call with a concrete slide citation
+- Cite a slide number for every claim. "Footers are white text on a purple bar (Slide 4)" is gradeable. "Footers look good" is not.
 - Penalize any missed, weakened, genericized, or contradicted style instruction — even if the deck is otherwise attractive
-- Missing even one bullet will reflect poorly on the evaluation
-- Keep per-bullet findings specific to each response — do not write generic observations
-- Rationales for this task type are much longer than three sentences
+- Keep per-bullet findings specific to this response — no observations that could apply to any deck
+- Rationales for this task type are substantially longer than any other task type
 
-FORMAT — produce THREE parts for every deck:
+FORMAT — produce THREE parts for every deck, in this order:
 
 ## Deck [LETTER]
 
 ### Guideline Flags
 [Copy each design-instruction bullet verbatim. Immediately below each bullet write:]
-Flag: [Met / Partially Met / Not Met] — [Cite the specific slide number and the concrete visual element. 1–2 sentences of specific evidence.]
+Flag: [Met / Partially Met / Not Met] — [Cite the specific slide number and the concrete visual element. 1–2 sentences of specific evidence. No vague impressions.]
 
 ### Aesthetic
-[One paragraph describing ONLY what is visually present on the slides: color palette, typography choices, layout, whitespace, visual hierarchy, imagery quality, spacing, and readability. This paragraph has one job — describe what the eye sees. Do NOT reference the design brief, the prompt, or the task instructions. Do NOT judge whether the content is accurate, whether the right document was used, whether information was distilled or faithfully sourced, or whether the deck fulfilled its intended purpose. Do NOT write about what the deck "should have been." Any sentence that begins with "This is not…" or "This deck was supposed to…" is wrong for this section. Describe only what is literally on the pages.]
+[One paragraph judging alignment, spacing, consistency, and readability — not adherence to the prompt. Describe only what the eye literally sees on the slides: color palette, typography, layout, whitespace, imagery quality, visual hierarchy. Do NOT reference the design brief, prompt, or grading task. Do NOT judge content accuracy, whether the right document was used, or whether the deck fulfilled its intended purpose. Any sentence beginning "This is not…" or "This deck was supposed to…" is wrong here.]
 
 ### Ranking
-[One paragraph synthesizing guideline adherence and aesthetics. End with: Score: X/7]
+[One full paragraph — not a fragment. Let the full Guideline Flags review drive the score; do not pick a number first and justify backward. Weigh every guideline and the severity of each miss. Run longer than three sentences. End with: Score: X/7]
 Reserve "the best" language only for the deck scoring 7. Match the tone of the rationale to the position on the ladder.
 
 FOREIGN LANGUAGE: Escalate ONLY if the design guidelines or user prompt are not in English. Do NOT escalate if the deck itself is in a foreign language. Do NOT translate.
@@ -902,6 +927,7 @@ After all individual scorecards:
 
 ## Ranking Summary
 [Score] — Deck [LETTER] — [one-line decisive reason]
+${RATIONALE_QUALITY}
 ${VOICE}`,
 
 complete_the_deck: () => `You are a professional scorecard writer for the Feather / Mercor "Les Artistes" platform.
@@ -943,6 +969,7 @@ After all individual scorecards:
 
 ## Ranking Summary
 [Score] — Deck [LETTER] — [one-line decisive reason]
+${RATIONALE_QUALITY}
 ${VOICE}`,
 
 ab_preferences: () => `You are a professional evaluator for the Feather / Mercor "Les Artistes" platform.
@@ -975,6 +1002,7 @@ OUTPUT FORMAT:
 
 ### Why This Deck
 [At least five sentences. Start with prompt faithfulness, then explain the visual appeal with specific slide citations and visual property comparisons. End with one sentence on the specific weakness of the other deck.]
+${RATIONALE_QUALITY}
 ${VOICE}`,
 
 deck_outlines: () => `You are a professional evaluator for the Feather / Mercor "Les Artistes" platform.
@@ -1012,6 +1040,7 @@ OUTPUT FORMAT:
 
 ### What Holds Back Outline [The Other]
 [One or two sentences on specific structural or writing weaknesses of the outline not chosen.]
+${RATIONALE_QUALITY}
 ${VOICE}`,
 
 };
@@ -1284,6 +1313,10 @@ function renderThumbs(idx) {
   ST.decks[idx].slides.forEach((sl,si) => {
     const w = document.createElement('div');
     w.className = 'thumb';
+    w.setAttribute('draggable','true');
+    w.addEventListener('dragstart',()=>thumbDragStart(idx,si,w));
+    w.addEventListener('dragend',()=>thumbDragEnd(w));
+    w.addEventListener('dragover',(e)=>thumbDragOver(e,idx,si));
     w.innerHTML = `<img src="${sl.dataUrl}" alt="" onclick="openCarousel(${idx},${si})" style="cursor:zoom-in"><span class="thumb-n">${si+1}</span><button class="thumb-del" onclick="removeSlide(${idx},${si});event.stopPropagation()">✕</button>`;
     tg.appendChild(w);
   });
@@ -1294,6 +1327,21 @@ function renderThumbs(idx) {
   updateDeckChip();
 }
 function removeSlide(di,si) { ST.decks[di].slides.splice(si,1); renderThumbs(di); }
+
+/* Drag-to-reorder slides within a deck */
+let _drag = {di:null, si:null};
+function thumbDragStart(di,si,el) { _drag={di,si}; el.style.opacity='.4'; }
+function thumbDragEnd(el) { el.style.opacity='1'; }
+function thumbDragOver(e,di,si) {
+  e.preventDefault();
+  if (_drag.di!==di||_drag.si===si) return;
+  const slides = ST.decks[di].slides;
+  const moved = slides.splice(_drag.si,1)[0];
+  slides.splice(si,0,moved);
+  _drag.si = si;
+  renderThumbs(di);
+}
+
 function triggerUpload(idx) { document.getElementById(`fi_${idx}`)?.click(); }
 function dzOver(e,idx) { e.preventDefault(); document.getElementById(`dz_${idx}`)?.classList.add('over'); }
 function dzLeave(idx) { document.getElementById(`dz_${idx}`)?.classList.remove('over'); }
